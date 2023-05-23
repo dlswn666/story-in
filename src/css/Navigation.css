@@ -1,0 +1,18 @@
+.nav-container {
+    text-align: center;
+  }
+  
+  .nav-item {
+    display: inline-block;
+    margin: 0 10px;
+    font-size: 20px;
+  }
+  
+  .nav-link {
+    text-decoration: none;
+    color: black;
+  }
+
+  .nav-container-sub{
+    margin-top: 50px;
+  }
