@@ -10,7 +10,13 @@
   
   .nav-link {
     text-decoration: none;
+    font-weight: normal;
     color: black;
+    transition: font-weight 0.3s ease;
+  }
+
+  .nav-link:hover {
+    font-weight: bold;
   }
 
   .nav-container-sub{

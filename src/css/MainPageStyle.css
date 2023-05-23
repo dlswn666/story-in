@@ -51,6 +51,7 @@
     text-align: center;
   }
 
-  .title{
-    margin-left: 410px;
-  }
+  .title {
+    position: fixed;
+    left: 410px;
+    }
