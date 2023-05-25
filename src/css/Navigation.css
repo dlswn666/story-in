@@ -6,7 +6,6 @@
 
 .emtyContainer1{
   width: 20%;
-  background-color: brown;
 }
 
 .content-container{
@@ -17,7 +16,6 @@
 
 .emtyContainer2{
   width: 20%;
-  background-color: brown;
 }
 
 .headerTitle {
@@ -26,19 +24,23 @@
     position: relative;
 }
 
-.headerTitle h2 {
-    padding-left: 10px;
-    font-size: 30px;
+.nav-combine{
+    margin: auto;
+    position: relative;
 }
 
 .nav-container-sub {
     margin: auto;
+    position: relative;
+    right: -50%;
 }
 
-.nav-item .title {
-    position: absolute;
-    left: 10px;
-    margin: auto;
+.nav-item.title {
+    padding-left: 10px;
+    font-size: 30px;
+    position: relative;
+    top: 0px;
+    left: -50%;
 }
 
 .nav-item {
