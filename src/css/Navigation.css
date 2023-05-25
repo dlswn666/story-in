@@ -1,24 +1,63 @@
 .nav-container {
     text-align: center;
-  }
-  
-  .nav-item {
+    height: 100px;
+    display: flex;
+}
+
+.emtyContainer1{
+  width: 20%;
+  background-color: brown;
+}
+
+.content-container{
+  text-align: center;
+  display: flex;
+  width: 80%;
+}
+
+.emtyContainer2{
+  width: 20%;
+  background-color: brown;
+}
+
+.headerTitle {
+    margin: auto;
+    display: inline-block;
+    position: relative;
+}
+
+.headerTitle h2 {
+    padding-left: 10px;
+    font-size: 30px;
+}
+
+.nav-container-sub {
+    margin: auto;
+}
+
+.nav-item .title {
+    position: absolute;
+    left: 10px;
+    margin: auto;
+}
+
+.nav-item {
     display: inline-block;
     margin: 0 10px;
     font-size: 20px;
-  }
-  
-  .nav-link {
+}
+
+.nav-link {
     text-decoration: none;
     font-weight: normal;
     color: black;
     transition: font-weight 0.3s ease;
-  }
+}
 
-  .nav-link:hover {
+.nav-link:hover {
     font-weight: bold;
-  }
+}
 
-  .nav-container-sub{
+.nav-container-sub {
     margin-top: 50px;
-  }
+}

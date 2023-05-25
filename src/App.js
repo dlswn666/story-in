@@ -4,6 +4,7 @@ import IntroPage from './pages/IntroPage';
 import MainPage from './pages/MainPage';
 import Navigation from './components/Navigation';
 import Footer from './components/Footer';
+import './App.css';
 
 function App() {
     return (
@@ -13,7 +14,7 @@ function App() {
                 <Route
                     path='/main'
                     element={
-                        <div>
+                        <div className='mainContainer'>
                             <Navigation />
                             <MainPage />
                             <Footer />
