@@ -2,6 +2,8 @@
     text-align: center;
     height: 100px;
     display: flex;
+    width: 1420px;
+    margin: 0 auto;
 }
 
 .emtyContainer1{
@@ -22,6 +24,8 @@
     margin: auto;
     display: inline-block;
     position: relative;
+    left: -100px;
+    top: 10px;
 }
 
 .nav-combine{
