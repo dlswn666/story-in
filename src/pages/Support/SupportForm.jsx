@@ -79,7 +79,7 @@ const SupportForm = () => {
                     <p>입력된 값 : {emailValue}</p>
                     <SelectBoxComponent label="건물 정보 *" options={homeTypeOptions} _onChange={setHomeTypeValue} />
                     <p>선택된 값: {homeTypeValue}</p>
-                    {/* 추후 필요하면 추가 */}
+                    {/* 추후 필요하면 추가 다시 확인*/}
                     {/* {homeTypeValue === '기타' && (
                 <InputComponent
                     label="기타 정보"
