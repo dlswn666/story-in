@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import InputComponent from '../../components/InputComponent';
 import SelectBoxComponent from '../../components/SelectBoxComponent';
 import CheckBoxComponent from '../../components/CheckBoxComponent';
-import PostCodeComponent from '../../components/postCodeComponent';
+import PostCodeComponent from '../../components/PostCodeComponent';
 import DaumPostcodeEmbed from 'react-daum-postcode';
 import Modal from 'react-modal';
 import DatePickerComponent from '../../components/DatePickerComponent';
