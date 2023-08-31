@@ -85,6 +85,8 @@ const StyledImage = styled.img`
     height: 100vh;
     object-fit: cover;
     animation: ${fadeIn} 1.5s forwards, ${fadeOut} 12s 1.5s forwards;
+    margin: 0;
+    padding: 0;
 `;
 
 const Title = styled.h1`

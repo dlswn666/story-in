@@ -19,7 +19,7 @@ const NavBar = () => {
                         <a href="/project">Project</a>
                     </li>
                     <li>
-                        <a href="/support">Support</a>
+                        <a href="/supportForm">Support</a>
                     </li>
                     <li>
                         <a href="/admin">Admin</a>
@@ -76,11 +76,12 @@ const WebName = styled.h1`
 `;
 
 const NavWarpper = styled.div`
+    background-color: #fafafa;
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
-    height: 70px;
+    height: 30px;
     display: flex;
     justify-content: space-between;
     align-items: center;
