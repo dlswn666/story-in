@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import InputComponent from '../../components/inputComponent';
+import InputComponent from '../../components/InputComponent';
 import SelectBoxComponent from '../../components/SelectBoxComponent';
 import CheckBoxComponent from '../../components/CheckBoxComponent';
 import PostCodeComponent from '../../components/postCodeComponent';
