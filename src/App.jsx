@@ -7,7 +7,7 @@ import Landingpage from './pages/Landingpage';
 import NavBar from './components/NavBar';
 import Main from './pages/Main';
 import AboutPage from './pages/about/AboutPage';
-import SupportForm from './pages/Support/SupportForm';
+import ConsultantForm from './pages/Consultant/ConsultantForm';
 
 const Layout = () => {
     return (
@@ -29,7 +29,7 @@ const App = () => {
                 <Route path="/*" element={<Layout />}>
                     <Route path="main" element={<Main />} />
                     <Route path="about" element={<AboutPage />} />
-                    <Route path="supportForm" element={<SupportForm />} />
+                    <Route path="consultantForm" element={<ConsultantForm />} />
                 </Route>
             </Routes>
         </BrowserRouter>

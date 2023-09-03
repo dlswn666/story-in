@@ -7,6 +7,7 @@ import DaumPostcodeEmbed from 'react-daum-postcode';
 import Modal from 'react-modal';
 import DatePickerComponent from '../../components/DatePickerComponent';
 import { styled } from 'styled-components';
+import ImageUpload from '../../components/ImageUpload';
 
 const SupportForm = () => {
     const [nameValue, setNameValue] = useState('');
@@ -21,6 +22,7 @@ const SupportForm = () => {
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [homeSize, setHomeSize] = useState('');
     const [budget, setBudget] = useState('');
+    const [uploadedImageUrl, setUploadedImageUrl] = useState('');
     const [isChecked, setIsChecked] = useState(false);
 
     const homeTypeOptions = [
@@ -135,9 +137,12 @@ const SupportForm = () => {
                             </>
                         }
                         placeholder="평수를 입력해주세요"
-                        _onChange={setEmailValue}
+                        _onChange={setHomeSize}
                     />
-                    <p>입력된 값 : {emailValue}</p>
+                    <p>입력된 값 : {homeSize}</p>
+                    <SectionHeader>
+                        <HeaderText>공사 의뢰 정보</HeaderText>
+                    </SectionHeader>
                     <DatePickerComponent
                         label="공사시작일 *"
                         placeholderText="공사 시작일을 선택해주세요"
@@ -158,7 +163,15 @@ const SupportForm = () => {
                         inputType="number"
                         _onChange={setBudget}
                     />
-                    <p>입력된 값 : {budget}</p>
+                    <p>입력된 값: {budget}</p>
+                    <ImageUpload
+                        storagePath=""
+                        lastFileName=""
+                        label="이미지 업로드"
+                        allowedFormats={['jpg', 'jpeg', 'png', 'gif']}
+                        onComplete={setUploadedImageUrl}
+                    />
+                    <p>업로드된 이미지 URL: {uploadedImageUrl}</p>
                     <CheckBoxComponent label="약관 동의" _onChange={setIsChecked} />
                     <p>동의 상태: {isChecked ? '동의함' : '동의하지 않음'}</p>
                 </Wrapper>
