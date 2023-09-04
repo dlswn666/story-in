@@ -2,21 +2,25 @@ import { useState } from 'react';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import app from '../firebaseConfig';
 import styled from 'styled-components';
-import StyledInput from './InputComponent';
 
-const ImageUpload = ({ storagePath, lastFileName, label, allowedFormats, onComplete }) => {
-    const [image, setImage] = useState(null);
+const ImageUpload = ({ storagePath, lastFileName, label, allowedFormats, onComplete, maxImages = 1 }) => {
+    const [images, setImages] = useState([]);
     const [progress, setProgress] = useState(0);
-    const [selectedFileName, setSelectedFileName] = useState('');
 
-    const handleChange = (e) => {
-        console.log(e.target);
+    const handleChange = (e, index) => {
         const file = e.target.files[0];
+        const reader = new FileReader();
+
+        reader.addEventListener('load', () => {
+            const newImages = [...images];
+            newImages[index] = { file, url: reader.result };
+            setImages(newImages);
+        });
+
         if (file) {
             const fileExtension = file.name.split('.').pop().toLowerCase();
             if (allowedFormats.includes(fileExtension)) {
-                setImage(file);
-                setSelectedFileName(file.name);
+                reader.readAsDataURL(file); // 확장자가 올바르면 파일 읽기를 시작합니다.
             } else {
                 alert('잘못된 확장자입니다');
                 if (typeof onInvalidFormat === 'function') {
@@ -26,38 +30,40 @@ const ImageUpload = ({ storagePath, lastFileName, label, allowedFormats, onCompl
         }
     };
 
-    const handleClear = () => {
-        setImage(null);
-        setSelectedFileName('');
-    };
-
     const handleUpload = () => {
-        if (image) {
-            const storage = getStorage(app);
+        const storage = getStorage(app);
+        console.log('images', images);
+        if (images) {
+            images.forEach((imageData, index) => {
+                console.log('index', index);
+                const { file } = imageData;
+                console.log('file', file);
+                if (file) {
+                    const now = new Date();
+                    const timestamp = `${now.getFullYear()}${now.getMonth()}${now.getDate()}${now.getHours()}${now.getMinutes()}${now.getSeconds()}${index}`;
+                    const fileName = `${timestamp}_${lastFileName}`;
 
-            const now = new Date();
-            const timestamp = `${now.getFullYear()}${now.getMonth()}${now.getDate()}${now.getHours()}${now.getMinutes()}${now.getSeconds()}`;
-            const fileName = `${timestamp}_${lastFileName}`;
+                    const storageRef = ref(storage, `${storagePath}/${fileName}`);
+                    const uploadTask = uploadBytesResumable(storageRef, file);
 
-            const storageRef = ref(storage, `${storagePath}/${fileName}`);
-            const uploadTask = uploadBytesResumable(storageRef, image);
-
-            uploadTask.on(
-                'state_changed',
-                (snapshot) => {
-                    const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-                    setProgress(progress);
-                },
-                (error) => {
-                    console.error(error);
-                },
-                () => {
-                    getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-                        console.log('File available at', downloadURL);
-                        onComplete(downloadURL);
-                    });
+                    uploadTask.on(
+                        'state_changed',
+                        (snapshot) => {
+                            const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+                            setProgress(progress);
+                        },
+                        (error) => {
+                            console.error(error);
+                        },
+                        () => {
+                            getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+                                console.log('File available at', downloadURL);
+                                onComplete(downloadURL);
+                            });
+                        }
+                    );
                 }
-            );
+            });
         } else {
             alert('이미지를 등록해주세요');
         }
@@ -67,23 +73,46 @@ const ImageUpload = ({ storagePath, lastFileName, label, allowedFormats, onCompl
         <>
             <Wrapper>
                 <StyledLabel>{label}</StyledLabel>
-                <StyledFileInput type="file" id="fileInput" onChange={handleChange} />
-                <StyledInputLabel htmlFor="fileInput">파일 선택</StyledInputLabel>
-                <StyledButton onClick={handleUpload}>업로드</StyledButton>
-                {selectedFileName && (
-                    <StyledInputWrapper>
-                        <StyledInput readOnly value={selectedFileName} label="선택된 파일" />
-                        <StyledButton onClick={handleClear}>취소</StyledButton>
-                    </StyledInputWrapper>
+                {images.map((imageData, index) => (
+                    <div key={index} className="image-container">
+                        <StyledFileInput
+                            type="file"
+                            id={`fileInput_${index}`}
+                            onChange={(e) => handleChange(e, index)}
+                        />
+                        {imageData.url ? (
+                            <StyledImagePreview
+                                src={imageData.url}
+                                onClick={() => document.getElementById(`fileInput_${index}`).click()}
+                            />
+                        ) : (
+                            <StyledMaterial>
+                                <i
+                                    className="material-icons"
+                                    onClick={() => document.getElementById(`fileInput_${index}`).click()}
+                                    style={{ fontSize: '80px', cursor: 'pointer' }}
+                                >
+                                    add_a_photo
+                                </i>
+                            </StyledMaterial>
+                        )}
+                    </div>
+                ))}
+                {images.length < maxImages && (
+                    <StyledAddButton
+                        onClick={() => {
+                            setImages([...images, {}]);
+                        }}
+                    >
+                        Add Image
+                    </StyledAddButton>
                 )}
+                <StyledButton onClick={handleUpload}>Upload</StyledButton>
                 <div>
                     {progress > 0 && (
-                        <div>
-                            <StyledProgressWrapper>
-                                <StyledProgressBar progress={progress}></StyledProgressBar>
-                            </StyledProgressWrapper>
-                            <StyledProgressText>{progress}%</StyledProgressText>
-                        </div>
+                        <StyledProgressWrapper>
+                            <StyledProgressBar progress={progress} />
+                        </StyledProgressWrapper>
                     )}
                 </div>
             </Wrapper>
@@ -94,35 +123,49 @@ const ImageUpload = ({ storagePath, lastFileName, label, allowedFormats, onCompl
 const Wrapper = styled.div`
     margin-top: 20px;
 `;
-const StyledInputWrapper = styled.div`
-    display: flex;
-    align-items: end;
-`;
 
 const StyledLabel = styled.label`
     display: block;
     margin-bottom: 8px;
-    font-weight: 600; // 글씨를 조금 더 진하게
+    font-weight: 600;
     font-size: 20px;
-    color: #333; // 어두운 회색
+    color: #333;
 `;
 
 const StyledFileInput = styled.input`
     display: none;
 `;
 
-const StyledInputLabel = styled.label`
-    display: inline-block;
-    background-color: #007bff;
-    color: white;
-    padding: 10px 20px;
-    border-radius: 5px;
+const StyledMaterial = styled.div``;
+
+const StyledImagePreview = styled.img`
+    width: 100px;
+    height: 100px;
+    border-radius: 8px;
     cursor: pointer;
-    font-size: 16px;
-    margin-right: 10px;
-    &:hover {
-        background-color: #0056b3;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f1f1f1; // 이 부분은 원하는 대로 설정하세요
+
+    & img {
+        width: 100%;
+        height: 100%;
+        border-radius: 8px;
     }
+
+    & i.material-icons {
+        font-size: 48px; // 아이콘 크기, 원하는 대로 설정
+    }
+`;
+
+const StyledAddButton = styled.button`
+    display: inline-block;
+    width: 100px;
+    height: 100px;
+    border: 2px dashed gray;
+    border-radius: 8px;
+    cursor: pointer;
 `;
 
 const StyledButton = styled.button`
@@ -133,9 +176,6 @@ const StyledButton = styled.button`
     padding: 10px 20px;
     cursor: pointer;
     font-size: 16px;
-    &:hover {
-        background-color: #0056b3;
-    }
 `;
 
 const StyledProgressWrapper = styled.div`
@@ -151,12 +191,6 @@ const StyledProgressBar = styled.div`
     height: 100%;
     background-color: #007bff;
     border-radius: 8px;
-`;
-
-const StyledProgressText = styled.span`
-    font-size: 16px;
-    margin-left: 10px;
-    vertical-align: middle;
 `;
 
 export default ImageUpload;

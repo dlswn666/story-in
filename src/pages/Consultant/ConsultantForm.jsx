@@ -8,28 +8,61 @@ import Modal from 'react-modal';
 import DatePickerComponent from '../../components/DatePickerComponent';
 import { styled } from 'styled-components';
 import ImageUpload from '../../components/ImageUpload';
+import RadioComponent from '../../components/RadioComponent';
+import ButtonComponent from '../../components/ButtonComponent';
 
 const SupportForm = () => {
     const [nameValue, setNameValue] = useState('');
     const [phoneValue, setPhoneValue] = useState('');
     const [emailValue, setEmailValue] = useState('');
     const [homeTypeValue, setHomeTypeValue] = useState('');
-    const [etcHomeTypeValue, setEtcHomeTypeValue] = useState('');
+    // 추후 필요하면 추가
+    // const [etcHomeTypeValue, setEtcHomeTypeValue] = useState('');
     const [homeYearValue, setHomeYearValue] = useState(new Date());
     const [openPostcode, setOpenPostcode] = useState(false);
+    const [openImageSelect, setOpenImageSelect] = useState(false);
     const [address, setAddress] = useState('');
     const [postcode, setPostcode] = useState('');
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [homeSize, setHomeSize] = useState('');
-    const [budget, setBudget] = useState('');
     const [uploadedImageUrl, setUploadedImageUrl] = useState('');
     const [isChecked, setIsChecked] = useState(false);
+
+    const [constructionStartDate, setConstructionStartDate] = useState(new Date());
+    const [moveInDate, setMoveInDate] = useState(new Date());
+    const [constructionBudget, setConstructionBudget] = useState('');
+    const [electricalWorkOption, setElectricalWorkOption] = useState('');
+    const [builtinFurnitureOption, setBuiltinFurnitureOption] = useState('');
+    const [expansionWork, setExpansionWork] = useState('');
+    const [floorExcelWork, setFloorExcelWork] = useState('');
+    const [systemACWork, setSystemACWork] = useState('');
+    const [homeStylingService, setHomeStylingService] = useState('');
+    const [mediumDoorReplacement, setMediumDoorReplacement] = useState('');
+
+    const [selectedBathOption, setSelectedBathOption] = useState('');
+    const radioYNOption = {
+        Y: '필요',
+        N: '불필요',
+    };
+    const electricOption = [
+        { value: '해당사항 없음', label: '해당사항 없음' },
+        { value: '콘센트 스위치 교체', label: '콘센트 스위치 교체' },
+        { value: '전체 조명 교체', label: '전체 조명 교체' },
+        { value: '간접신설', label: '간접신설' },
+        { value: '기타', label: '기타' },
+    ];
 
     const homeTypeOptions = [
         { value: '아파트', label: '아파트' },
         { value: '단독주택', label: '단독주택' },
         { value: '빌라', label: '빌라' },
         { value: '주상복합', label: '주상복합' },
+    ];
+    const furnitureOptions = [
+        { value: '해당사항 없음', label: '해당사항 없음' },
+        { value: '주방', label: '주방' },
+        { value: '주방외', label: '주방외' },
+        { value: '리폼', label: '리폼' },
     ];
 
     const kakaoPostCodeHandler = {
@@ -146,44 +179,144 @@ const SupportForm = () => {
                     <DatePickerComponent
                         label="공사시작일 *"
                         placeholderText="공사 시작일을 선택해주세요"
-                        selectedDate={selectedDate}
-                        setSelectedDate={setSelectedDate}
+                        selectedDate={constructionStartDate}
+                        setSelectedDate={setConstructionStartDate}
                     />
-                    <p>입력된 값: {selectedDate?.toLocaleDateString()}</p>
+                    <p>공사시작일: {constructionStartDate?.toLocaleDateString()}</p>
                     <DatePickerComponent
                         label="입주예정일 *"
                         placeholderText="입주 예정일을 선택해주세요"
-                        selectedDate={selectedDate}
-                        setSelectedDate={setSelectedDate}
+                        selectedDate={moveInDate}
+                        setSelectedDate={setMoveInDate}
                     />
-                    <p>입력된 값: {selectedDate?.toLocaleDateString()}</p>
+                    <p>입주예정일: {moveInDate?.toLocaleDateString()}</p>
                     <InputComponent
                         label="예산 *(단위 : 원)"
                         placeholder="예산을 입력해주세요"
                         inputType="number"
-                        _onChange={setBudget}
+                        _onChange={setConstructionBudget}
                     />
-                    <p>입력된 값: {budget}</p>
+                    <p>예산: {constructionBudget}</p>
+                    <CheckBoxComponent label="약관 동의" _onChange={setIsChecked} />
+                    <p>동의 상태: {isChecked ? '동의함' : '동의하지 않음'}</p>
+                    <RadioComponent
+                        label="욕실 공사"
+                        name="bath"
+                        options={radioYNOption}
+                        _onChange={setSelectedBathOption}
+                    />
+                    {selectedBathOption === 'Y' && (
+                        <ImageUpload
+                            storagePath="bathImage"
+                            lastFileName="bathImage"
+                            label="욕실 이미지 업로드"
+                            allowedFormats={['jpg', 'jpeg', 'png', 'gif']}
+                            onComplete={setUploadedImageUrl}
+                        />
+                    )}
+                    <p>입력된 값: {selectedBathOption}</p>
+                    <RadioComponent
+                        label="확장 공사"
+                        name="expansionWork"
+                        options={radioYNOption}
+                        _onChange={setExpansionWork}
+                    />
+                    <p>확장 공사: {expansionWork}</p>
+                    <RadioComponent
+                        label="바닥 엑셀 공사"
+                        name="floorExcelWork"
+                        options={radioYNOption}
+                        _onChange={setFloorExcelWork}
+                    />
+                    <p>바닥 엑셀 공사: {floorExcelWork}</p>
+                    <RadioComponent
+                        label="시스템 에어컨 공사"
+                        name="systemACWork"
+                        options={radioYNOption}
+                        _onChange={setSystemACWork}
+                    />
+                    <p>시스템 에어컨 공사: {systemACWork}</p>
+                    <RadioComponent
+                        label="홈스타일링 서비스"
+                        name="homeStylingService"
+                        options={radioYNOption}
+                        _onChange={setHomeStylingService}
+                    />
+                    <p>홈스타일링 서비스: {homeStylingService}</p>
+                    <RadioComponent
+                        label="중문 교체"
+                        name="mediumDoorReplacement"
+                        options={radioYNOption}
+                        _onChange={setMediumDoorReplacement}
+                    />
+                    <p>중문 교체: {mediumDoorReplacement}</p>
+                    <SelectBoxComponent
+                        label="전기 공사"
+                        options={electricOption}
+                        _onChange={setElectricalWorkOption}
+                    />
+                    <p>전기 공사: {electricalWorkOption}</p>
+
+                    <SelectBoxComponent
+                        label="붙박이 가구 공사"
+                        options={furnitureOptions}
+                        _onChange={setBuiltinFurnitureOption}
+                    />
+                    <p>붙박이 가구 공사: {builtinFurnitureOption}</p>
+                    <SectionHeader>
+                        <HeaderText>인테리어 컨셉 이미지 업로드</HeaderText>
+                    </SectionHeader>
                     <ImageUpload
-                        storagePath=""
-                        lastFileName=""
-                        label="이미지 업로드"
+                        storagePath="conceptImage"
+                        lastFileName="conceptImage"
+                        label="인테리어 컨셉 이미지 업로드"
                         allowedFormats={['jpg', 'jpeg', 'png', 'gif']}
                         onComplete={setUploadedImageUrl}
                     />
                     <p>업로드된 이미지 URL: {uploadedImageUrl}</p>
-                    <CheckBoxComponent label="약관 동의" _onChange={setIsChecked} />
-                    <p>동의 상태: {isChecked ? '동의함' : '동의하지 않음'}</p>
+                    <ButtonComponent
+                        label="버튼"
+                        onClick={() => {
+                            setOpenImageSelect(true);
+                        }}
+                    />
+                    {openImageSelect && (
+                        <Modal
+                            isOpen={openImageSelect}
+                            onRequestClose={() => setOpenImageSelect(false)}
+                            contentLabel="Address Search"
+                            style={{
+                                // 모달 스타일을 설정하려면 여기에 추가
+                                content: {
+                                    width: '520px',
+                                    margin: 'auto',
+                                    height: 'fit-content',
+                                },
+                            }}
+                        >
+                            <ImageUpload
+                                storagePath="conceptImage"
+                                lastFileName="conceptImage"
+                                label="인테리어 컨셉 이미지 업로드"
+                                allowedFormats={['jpg', 'jpeg', 'png', 'gif']}
+                                onComplete={setUploadedImageUrl}
+                                maxImages="5"
+                            />
+                        </Modal>
+                    )}
                 </Wrapper>
                 <SideWrapper></SideWrapper>
             </div>
+            <div style={{ height: '300px' }}></div>
         </>
     );
 };
 
-const Wrapper = styled.div``;
+const Wrapper = styled.div`
+    width: 50%;
+`;
 const SideWrapper = styled.div`
-    width: 30%;
+    width: 25%;
 `;
 const SectionHeader = styled.div`
     display: flex;
@@ -191,6 +324,7 @@ const SectionHeader = styled.div`
     text-align: center;
     width: 100%;
     margin-bottom: 20px;
+    margin-top: 20px;
 
     &::before,
     &::after {
@@ -213,7 +347,6 @@ const HeaderText = styled.span`
     flex-grow: 1;
     padding: 0 20px;
     background: white;
-    z-index: 1;
     position: relative;
 `;
 
