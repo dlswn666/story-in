@@ -1,7 +1,18 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
-const RadioComponent = ({ label, name, options, _onChange }) => {
+const RadioComponent = ({ label, name, options, _onChange, initialValue }) => {
+    const [selectedValue, setSelectedValue] = useState(initialValue);
+
+    const handleChange = (value) => {
+        setSelectedValue(value);
+        _onChange(value);
+    };
+
+    useEffect(() => {
+        setSelectedValue(initialValue);
+    }, [initialValue]);
+
     return (
         <Wrapper>
             <StyledTopLabel>{label}</StyledTopLabel>
@@ -12,7 +23,8 @@ const RadioComponent = ({ label, name, options, _onChange }) => {
                         id={`${name}-${key}`}
                         name={name}
                         value={key}
-                        onChange={(e) => _onChange(e.target.value)}
+                        onChange={(e) => handleChange(key)}
+                        checked={selectedValue === key}
                     />
                     <StyledLabel htmlFor={`${name}-${key}`}>{options[key]}</StyledLabel>
                 </RadioWrapper>

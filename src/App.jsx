@@ -7,6 +7,7 @@ import Landingpage from './pages/Landingpage';
 import NavBar from './components/NavBar';
 import Main from './pages/Main';
 import AboutPage from './pages/about/AboutPage';
+import ConsultantQuery from './pages/Consultant/ConsultantQuery';
 import ConsultantForm from './pages/Consultant/ConsultantForm';
 
 const Layout = () => {
@@ -29,6 +30,7 @@ const App = () => {
                 <Route path="/*" element={<Layout />}>
                     <Route path="main" element={<Main />} />
                     <Route path="about" element={<AboutPage />} />
+                    <Route path="consultant" element={<ConsultantQuery />} />
                     <Route path="consultantForm" element={<ConsultantForm />} />
                 </Route>
             </Routes>

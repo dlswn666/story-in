@@ -4,8 +4,7 @@ import app from '../firebaseConfig';
 import styled from 'styled-components';
 
 const ImageUpload = ({ storagePath, lastFileName, label, allowedFormats, onComplete, maxImages = 1 }) => {
-    const [images, setImages] = useState([]);
-    const [progress, setProgress] = useState(0);
+    const [images, setImages] = useState([{}]);
 
     const handleChange = (e, index) => {
         const file = e.target.files[0];
@@ -30,44 +29,45 @@ const ImageUpload = ({ storagePath, lastFileName, label, allowedFormats, onCompl
         }
     };
 
-    const handleUpload = () => {
-        const storage = getStorage(app);
-        console.log('images', images);
-        if (images) {
-            images.forEach((imageData, index) => {
-                console.log('index', index);
-                const { file } = imageData;
-                console.log('file', file);
-                if (file) {
-                    const now = new Date();
-                    const timestamp = `${now.getFullYear()}${now.getMonth()}${now.getDate()}${now.getHours()}${now.getMinutes()}${now.getSeconds()}${index}`;
-                    const fileName = `${timestamp}_${lastFileName}`;
+    // const handleUpload = () => {
+    //     const storage = getStorage(app);
+    //     console.log('images', images);
+    //     // if (images) {
+    //     //     images.forEach((imageData, index) => {
+    //     //         console.log('index', index);
+    //     //         const { file } = imageData;
+    //     //         console.log('file', file);
+    //     //         if (file) {
+    //     //             const now = new Date();
+    //     //             const timestamp = `${now.getFullYear()}${now.getMonth()}${now.getDate()}${now.getHours()}${now.getMinutes()}${now.getSeconds()}${index}`;
+    //     //             const fileName = `${timestamp}_${lastFileName}`;
 
-                    const storageRef = ref(storage, `${storagePath}/${fileName}`);
-                    const uploadTask = uploadBytesResumable(storageRef, file);
+    //     //             const storageRef = ref(storage, `${storagePath}/${fileName}`);
+    //     //             const uploadTask = uploadBytesResumable(storageRef, file);
 
-                    uploadTask.on(
-                        'state_changed',
-                        (snapshot) => {
-                            const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-                            setProgress(progress);
-                        },
-                        (error) => {
-                            console.error(error);
-                        },
-                        () => {
-                            getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-                                console.log('File available at', downloadURL);
-                                onComplete(downloadURL);
-                            });
-                        }
-                    );
-                }
-            });
-        } else {
-            alert('이미지를 등록해주세요');
-        }
-    };
+    //     //             uploadTask.on(
+    //     //                 'state_changed',
+    //     //                 (snapshot) => {
+    //     //                     const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+    //     //                     setProgress(progress);
+    //     //                 },
+    //     //                 (error) => {
+    //     //                     console.error(error);
+    //     //                 },
+    //     //                 () => {
+    //     //                     getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+    //     //                         console.log('File available at', downloadURL);
+    //     //                         setDownloadUrLs((preDownloadURLs) => [...preDownloadURLs, downloadURL]);
+    //     //                     });
+    //     //                 }
+    //     //             );
+    //     //         }
+    //     //     });
+    //     //     onComplete(downloadURLs);
+    //     // } else {
+    //     //     alert('이미지를 등록해주세요');
+    //     // }
+    // };
 
     return (
         <>
@@ -86,47 +86,63 @@ const ImageUpload = ({ storagePath, lastFileName, label, allowedFormats, onCompl
                                 onClick={() => document.getElementById(`fileInput_${index}`).click()}
                             />
                         ) : (
-                            <StyledMaterial>
-                                <i
-                                    className="material-icons"
-                                    onClick={() => document.getElementById(`fileInput_${index}`).click()}
-                                    style={{ fontSize: '80px', cursor: 'pointer' }}
-                                >
+                            <StyledMaterial onClick={() => document.getElementById(`fileInput_${index}`).click()}>
+                                <i className="material-icons" style={{ fontSize: '40px', cursor: 'pointer' }}>
                                     add_a_photo
                                 </i>
+                                <p style={{ marginTop: 0 }}>Add Image</p>
                             </StyledMaterial>
                         )}
                     </div>
                 ))}
-                {images.length < maxImages && (
-                    <StyledAddButton
+                <StyledButtonWrapper>
+                    {images.length < maxImages && (
+                        <StyledButton
+                            onClick={() => {
+                                setImages([...images, {}]);
+                            }}
+                        >
+                            Add Image
+                        </StyledButton>
+                    )}
+                    <StyledButton
                         onClick={() => {
-                            setImages([...images, {}]);
+                            const flage = 'Y';
+                            onComplete(images, flage, storagePath, lastFileName);
                         }}
                     >
-                        Add Image
-                    </StyledAddButton>
-                )}
-                <StyledButton onClick={handleUpload}>Upload</StyledButton>
-                <div>
-                    {progress > 0 && (
-                        <StyledProgressWrapper>
-                            <StyledProgressBar progress={progress} />
-                        </StyledProgressWrapper>
-                    )}
-                </div>
+                        Complete
+                    </StyledButton>
+                    <StyledCancleButton
+                        onClick={() => {
+                            const flage = 'N';
+                            onComplete(images, flage, storagePath, lastFileName);
+                        }}
+                    >
+                        <i className="material-icons" style={{ fontSize: '40px', cursor: 'pointer' }}>
+                            close
+                        </i>
+                    </StyledCancleButton>
+                </StyledButtonWrapper>
             </Wrapper>
         </>
     );
 };
 
 const Wrapper = styled.div`
+    margin-top: 5px;
+    width: 320px;
+`;
+
+const StyledButtonWrapper = styled.div`
+    display: flex;
+    justify-content: space-between;
     margin-top: 20px;
 `;
 
 const StyledLabel = styled.label`
     display: block;
-    margin-bottom: 8px;
+    margin-bottom: 40px;
     font-weight: 600;
     font-size: 20px;
     color: #333;
@@ -136,7 +152,24 @@ const StyledFileInput = styled.input`
     display: none;
 `;
 
-const StyledMaterial = styled.div``;
+const StyledMaterial = styled.div`
+    display: flex;
+    align-content: flex-end;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    width: 100px;
+    height: 100px;
+    border: 2px dashed gray;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 20px;
+    &:hover {
+        background-color: #f5f5f5;
+    }
+`;
+
+const StyledImageContainer = styled.div``;
 
 const StyledImagePreview = styled.img`
     width: 100px;
@@ -147,7 +180,7 @@ const StyledImagePreview = styled.img`
     justify-content: center;
     align-items: center;
     background-color: #f1f1f1; // 이 부분은 원하는 대로 설정하세요
-
+    margin-top: 20px;
     & img {
         width: 100%;
         height: 100%;
@@ -176,6 +209,17 @@ const StyledButton = styled.button`
     padding: 10px 20px;
     cursor: pointer;
     font-size: 16px;
+    &:hover {
+        background-color: #0056b3;
+    }
+`;
+
+const StyledCancleButton = styled.button`
+    position: absolute;
+    top: 20px;
+    right: 10px;
+    border: none;
+    background-color: white;
 `;
 
 const StyledProgressWrapper = styled.div`

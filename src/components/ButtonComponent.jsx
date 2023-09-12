@@ -1,15 +1,24 @@
 import React from 'react';
 import { styled } from 'styled-components';
 
-const ButtonComponent = ({ label, onClick, style }) => {
+const ButtonComponent = ({ label, buttonName, onClick, style }) => {
     return (
         <>
+            <StyledLabel>{label}</StyledLabel>
             <StyledButton onClick={onClick} style={style}>
-                {label}
+                {buttonName}
             </StyledButton>
         </>
     );
 };
+
+const StyledLabel = styled.label`
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 20px;
+    color: #333;
+`;
 
 const StyledButton = styled.button`
     background-color: #007bff;

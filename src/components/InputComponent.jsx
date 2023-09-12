@@ -1,26 +1,42 @@
-import React from 'react';
-import styled from 'styled-components';
+import React, { forwardRef, useState } from 'react';
+import styled, { keyframes } from 'styled-components';
 
-const InputComponent = ({ label, placeholder, _onChange, inputType, ...restProps }) => {
+const InputComponent = forwardRef(({ label, placeholder, _onChange, inputType, required, ...restProps }, ref) => {
+    const [isEmpty, setIsEmpty] = useState(false);
+
     const handleChange = (e) => {
+        const value = e.target.value;
         _onChange(e.target.value);
+
+        if (required) {
+            setIsEmpty(value === '');
+        }
     };
 
     return (
         <>
             <Wrapper>
                 <StyledLabel>{label}</StyledLabel>
-                <StyledInput onChange={handleChange} placeholder={placeholder} type={inputType} {...restProps} />
+                <StyledInput
+                    ref={ref}
+                    onChange={handleChange}
+                    placeholder={placeholder}
+                    type={inputType}
+                    required={required}
+                    {...restProps}
+                />
+                {required && isEmpty && <StyledSpan>필수 입력항목입니다.</StyledSpan>}
             </Wrapper>
         </>
     );
-};
+});
 
 InputComponent.defaultProps = {
     label: '텍스트',
     placeholder: '텍스트를 입력하세요.',
     _onChange: () => {},
     inputType: 'text',
+    required: false,
 };
 
 const Wrapper = styled.div`
@@ -54,6 +70,23 @@ const StyledInput = styled.input`
     &::placeholder {
         color: #aaa; // 세련된 placeholder 색상
     }
+`;
+
+const fadeIn = keyframes`
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+`;
+
+const StyledSpan = styled.span`
+    color: red;
+    font-size: 14px;
+    margin-top: 4px;
+    animation: ${fadeIn} 0.5s ease-in;
 `;
 
 export default InputComponent;

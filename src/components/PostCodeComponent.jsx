@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import styled from 'styled-components';
 
-const PostCodeComponent = ({ label, _onClick, address, postcode }) => {
+const PostCodeComponent = forwardRef(({ label, _onClick, address, postcode }, ref) => {
     const handleChange = () => {
         _onClick();
     };
@@ -9,12 +9,12 @@ const PostCodeComponent = ({ label, _onClick, address, postcode }) => {
         <>
             <Wrapper>
                 <StyledLabel>{label}</StyledLabel>
-                <StyledInput onClick={handleChange} placeholder="클릭해주세요" value={address} readOnly />
+                <StyledInput onClick={handleChange} placeholder="클릭해주세요" value={address} ref={ref} readOnly />
                 {postcode && <StyledInput value={postcode} readOnly />}
             </Wrapper>
         </>
     );
-};
+});
 
 const Wrapper = styled.div`
     display: flex;

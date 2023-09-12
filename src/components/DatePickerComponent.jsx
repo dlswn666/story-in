@@ -1,9 +1,13 @@
-import React, { useState } from 'react';
+import React, { forwardRef, useState } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { styled } from 'styled-components';
 
-const DatePickerComponent = ({ selectedDate, setSelectedDate, label, placeholderText }) => {
+const DatePickerComponent = forwardRef(({ selectedDate, setSelectedDate, label, placeholderText }, ref) => {
+    const CustomInput = React.forwardRef(({ value, onClick }, innerRef) => (
+        <input ref={innerRef} onClick={onClick} value={value} readOnly />
+    ));
+
     return (
         <DatePickerWrapper>
             <StyledLabel>{label}</StyledLabel>
@@ -13,10 +17,11 @@ const DatePickerComponent = ({ selectedDate, setSelectedDate, label, placeholder
                 dateFormat="yyyy-MM-dd" // 원하는 포맷으로 날짜 표시
                 isClearable // 날짜 선택 취소 가능하게 만들기 위한 옵션
                 placeholderText={placeholderText}
+                customInput={<CustomInput ref={ref} />}
             />
         </DatePickerWrapper>
     );
-};
+});
 
 const DatePickerWrapper = styled.div`
     margin-top: 20px;
