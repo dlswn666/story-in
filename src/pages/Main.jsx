@@ -1,28 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import ImageCard from '../components/ImageCard';
 import { styled } from 'styled-components';
+import app from '../firebaseConfig';
+import { getDownloadURL, getStorage, listAll, ref } from 'firebase/storage';
 
 const Main = () => {
     const [images, setImages] = useState([]);
 
+    const getImages = async () => {
+        const storage = getStorage(app);
+        const imagesRef = ref(storage, 'landingImages');
+
+        // Firebase로부터 이미지 목록 가져오기
+        const { items } = await listAll(imagesRef);
+        const downloadURLs = await Promise.all(items.map((item) => getDownloadURL(item)));
+
+        // 이미지 URL로 상태 업데이트
+        setImages(downloadURLs);
+    };
+
     useEffect(() => {
-        const savedImages = localStorage.getItem('images');
-        if (savedImages) {
-            const parsedImages = JSON.parse(savedImages);
-            setImages(parsedImages.slice(0, 8));
-        }
+        getImages(); // <--- 수정된 부분
     }, []);
 
     return (
         <ImageGrid>
             {/* 이미지 카드 컴포넌트에 이미지 데이터를 전달 */}
-            {images.map((image) => (
-                <ImageCard
-                    key={image.id}
-                    imageSrc={image.urls.regular}
-                    altText={image.description}
-                    text="Your text here" // 텍스트 내용 변경 가능
-                />
+            {images.map((image, index) => (
+                <ImageCard key={index} imageSrc={image} altText="Description here" text="Your text here" />
             ))}
         </ImageGrid>
     );

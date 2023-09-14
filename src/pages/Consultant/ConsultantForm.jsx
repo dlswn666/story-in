@@ -15,6 +15,7 @@ import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/
 import { getFirestore, collection, addDoc, getDoc, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import TextBoxComponent from '../../components/TextBoxComponent';
 import { useLocation, useNavigate } from 'react-router-dom';
+import NotificationModal from '../modal/NotificationModal';
 
 const useQuery = () => {
     return new URLSearchParams(useLocation().search);
@@ -65,6 +66,11 @@ const ConsultantForm = () => {
     const [progress, setProgress] = useState(0);
     const [conceptImagesDownloadURLs, setConceptImagesDownloadURLs] = useState('');
     const [bathImagesDownloadURLs, setBathImagesDownloadURLs] = useState('');
+
+    const [modalOpen, setModalOpen] = useState(false);
+    const [modalMessage, setModalMessage] = useState('');
+    const [modalType, setModalType] = useState('alert');
+    const [modalFlag, setModalFlag] = useState('');
 
     const navigate = useNavigate();
 
@@ -382,10 +388,36 @@ const ConsultantForm = () => {
                 // Firestore에 데이터 추가
                 const db = getFirestore(app); // app은 초기화된 Firebase 앱 인스턴스입니다.
                 const docRef = await addDoc(collection(db, 'consultantRequest'), formData);
-                alert('문의 완료.견적서 확인 후 연락 드리겠습니다.');
+                // alert('문의 완료.견적서 확인 후 연락 드리겠습니다.');
+                const message = '저장 완료. \n견적서 확인 후 연락드리겠습니다';
+                const modalType = 'alert';
+                const modalFlage = 'success';
+                modalSet(message, modalType, modalFlage);
             } catch (error) {
                 console.error(error);
+                const errorMessage = '저장에 실패하였습니다.';
+                const errorModalType = 'alert';
+                modalSet(errorMessage, errorModalType);
             }
+        }
+    };
+
+    const modalSet = (message, type, flag) => {
+        setModalOpen('true');
+        setModalMessage(message);
+        setModalType(type);
+        setModalFlag(flag);
+    };
+
+    const closeModal = () => {
+        setModalOpen(false);
+    };
+
+    const onConfirm = (flag) => {
+        if (flag === 'remove') {
+            removeForm();
+        } else if (flag === 'success') {
+            navigate('/Consultant');
         }
     };
 
@@ -712,7 +744,10 @@ const ConsultantForm = () => {
                         {postId ? (
                             <>
                                 <ButtonComponent buttonName="수정" onClick={modifyForm} />
-                                <ButtonComponent buttonName="삭제" onClick={removeForm} />
+                                <ButtonComponent
+                                    buttonName="삭제"
+                                    onClick={() => modalSet('삭제하시겠습니까?', 'confirm', 'remove')}
+                                />
                             </>
                         ) : (
                             <ButtonComponent buttonName="견적 문의" onClick={submitForm} />
@@ -721,6 +756,14 @@ const ConsultantForm = () => {
                     </ButtonWrapper>
                     <CheckBoxComponent label="약관 동의" _onChange={setIsChecked} />
                 </Wrapper>
+                <NotificationModal
+                    isopen={modalOpen}
+                    message={modalMessage}
+                    onClose={closeModal}
+                    onConfirm={() => onConfirm(modalFlag)}
+                    type={modalType}
+                    confirmFlag={modalFlag}
+                />
                 <SideWrapper></SideWrapper>
             </div>
             <div style={{ height: '300px' }}></div>
