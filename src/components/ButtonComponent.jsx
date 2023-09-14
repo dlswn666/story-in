@@ -1,11 +1,11 @@
 import React from 'react';
 import { styled } from 'styled-components';
 
-const ButtonComponent = ({ label, buttonName, onClick, style }) => {
+const ButtonComponent = ({ label, buttonName, onClick, style, type }) => {
     return (
         <>
             <StyledLabel>{label}</StyledLabel>
-            <StyledButton onClick={onClick} style={style}>
+            <StyledButton onClick={onClick} style={style} type={type}>
                 {buttonName}
             </StyledButton>
         </>

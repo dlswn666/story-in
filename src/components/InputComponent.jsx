@@ -1,35 +1,38 @@
 import React, { forwardRef, useState } from 'react';
 import styled, { keyframes } from 'styled-components';
 
-const InputComponent = forwardRef(({ label, placeholder, _onChange, inputType, required, ...restProps }, ref) => {
-    const [isEmpty, setIsEmpty] = useState(false);
+const InputComponent = forwardRef(
+    ({ label, placeholder, _onChange, inputType, required, value, ...restProps }, ref) => {
+        const [isEmpty, setIsEmpty] = useState(false);
 
-    const handleChange = (e) => {
-        const value = e.target.value;
-        _onChange(e.target.value);
+        const handleChange = (e) => {
+            const value = e.target.value;
+            _onChange(e.target.value);
 
-        if (required) {
-            setIsEmpty(value === '');
-        }
-    };
+            if (required) {
+                setIsEmpty(value === '');
+            }
+        };
 
-    return (
-        <>
-            <Wrapper>
-                <StyledLabel>{label}</StyledLabel>
-                <StyledInput
-                    ref={ref}
-                    onChange={handleChange}
-                    placeholder={placeholder}
-                    type={inputType}
-                    required={required}
-                    {...restProps}
-                />
-                {required && isEmpty && <StyledSpan>필수 입력항목입니다.</StyledSpan>}
-            </Wrapper>
-        </>
-    );
-});
+        return (
+            <>
+                <Wrapper>
+                    <StyledLabel>{label}</StyledLabel>
+                    <StyledInput
+                        ref={ref}
+                        onChange={handleChange}
+                        placeholder={placeholder}
+                        type={inputType}
+                        value={value}
+                        required={required}
+                        {...restProps}
+                    />
+                    {required && isEmpty && <StyledSpan>필수 입력항목입니다.</StyledSpan>}
+                </Wrapper>
+            </>
+        );
+    }
+);
 
 InputComponent.defaultProps = {
     label: '텍스트',
@@ -37,6 +40,7 @@ InputComponent.defaultProps = {
     _onChange: () => {},
     inputType: 'text',
     required: false,
+    value: '',
 };
 
 const Wrapper = styled.div`

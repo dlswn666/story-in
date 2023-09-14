@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import InputComponent from '../../components/InputComponent';
 import SelectBoxComponent from '../../components/SelectBoxComponent';
 import CheckBoxComponent from '../../components/CheckBoxComponent';
@@ -12,11 +12,18 @@ import RadioComponent from '../../components/RadioComponent';
 import ButtonComponent from '../../components/ButtonComponent';
 import app from '../../firebaseConfig';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import { getFirestore, collection, addDoc } from 'firebase/firestore';
+import { getFirestore, collection, addDoc, getDoc, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import TextBoxComponent from '../../components/TextBoxComponent';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
-const SupportForm = () => {
+const useQuery = () => {
+    return new URLSearchParams(useLocation().search);
+};
+
+const ConsultantForm = () => {
+    const query = useQuery();
+    const postId = query.get('id');
+
     const [nameValue, setNameValue] = useState('');
     const nameInput = useRef(null);
     const [passwordValue, setPasswordValue] = useState('');
@@ -25,7 +32,7 @@ const SupportForm = () => {
     const phoneInput = useRef(null);
     const [emailValue, setEmailValue] = useState('');
     const emailInput = useRef(null);
-    const [homeTypeValue, setHomeTypeValue] = useState('아파트');
+    const [homeTypeValue, setHomeTypeValue] = useState('');
     // 추후 필요하면 추가
     // const [etcHomeTypeValue, setEtcHomeTypeValue] = useState('');
     const [homeYearValue, setHomeYearValue] = useState(new Date());
@@ -56,8 +63,8 @@ const SupportForm = () => {
     const [conceptImages, setConceptImages] = useState([{}]);
     const [bathImages, setBathImages] = useState([{}]);
     const [progress, setProgress] = useState(0);
-    const [conceptImagesDownloadURLs, setConceptImagesDownloadURLs] = useState([]);
-    const [bathImagesDownloadURLs, setBathImagesDownloadURLs] = useState([]);
+    const [conceptImagesDownloadURLs, setConceptImagesDownloadURLs] = useState('');
+    const [bathImagesDownloadURLs, setBathImagesDownloadURLs] = useState('');
 
     const navigate = useNavigate();
 
@@ -94,6 +101,108 @@ const SupportForm = () => {
         { value: '샤시 틀만 필름', label: '샤시 틀만 필름' },
     ];
 
+    const fetchData = async () => {
+        const db = getFirestore(app);
+        const docRef = doc(db, 'consultantRequest', postId);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            setNameValue(data.nameValue);
+            setPasswordValue(data.passwordValue);
+            setPhoneValue(data.phoneValue);
+            setEmailValue(data.emailValue);
+            setHomeTypeValue(data.homeTypeValue);
+            setHomeYearValue(
+                data.homeYearValue.seconds ? new Date(data.homeYearValue.seconds * 1000) : data.homeYearValue
+            ); // Timestamp를 Date 객체로 변환
+            setAddress(data.address);
+            setPostcode(data.postcode);
+            setHomeSize(data.homeSize);
+            setConstructionStartDate(new Date(data.constructionStartDate)); // 문자열을 Date 객체로 변환
+            setMoveInDate(new Date(data.moveInDate)); // 문자열을 Date 객체로 변환
+            setConstructionBudget(data.constructionBudget);
+            setElectricalWorkOption(data.electricalWorkOption);
+            setBuiltinFurnitureOption(data.builtinFurnitureOption);
+            setSelectedBathOption(data.selectedBathOption);
+            setShassisOption(data.shassisOption);
+            setExpansionWork(data.expansionWork);
+            setFloorExcelWork(data.floorExcelWork);
+            setSystemACWork(data.systemACWork);
+            setHomeStylingService(data.homeStylingService);
+            setMediumDoorReplacement(data.mediumDoorReplacement);
+            setIsChecked(data.isChecked);
+            setAdditionalQuestions(data.additionalQuestions);
+
+            // 배열 형식을 조심스럽게 설정
+            setConceptImagesDownloadURLs(data.conceptImagesDownloadURLs);
+            setBathImagesDownloadURLs(data.bathImagesDownloadURLs);
+            setBathImages(data.bathImagesDownloadURLs.split('|').map((url) => ({ url })));
+            setConceptImages(data.conceptImagesDownloadURLs.split('|').map((url) => ({ url })));
+        }
+    };
+
+    useEffect(() => {
+        if (postId) {
+            fetchData();
+        }
+    }, [postId]);
+
+    const modifyForm = () => {
+        const newData = {
+            nameValue,
+            passwordValue,
+            phoneValue,
+            emailValue,
+            homeTypeValue,
+            homeYearValue,
+            address,
+            postcode,
+            homeSize,
+            isChecked,
+            constructionStartDate: constructionStartDate.toISOString(),
+            moveInDate: moveInDate.toISOString(),
+            constructionBudget,
+            electricalWorkOption,
+            builtinFurnitureOption,
+            selectedBathOption,
+            expansionWork,
+            floorExcelWork,
+            systemACWork,
+            homeStylingService,
+            mediumDoorReplacement,
+            shassisOption,
+            additionalQuestions,
+            conceptImagesDownloadURLs,
+            bathImagesDownloadURLs,
+            submitDate: new Date().toISOString(),
+        };
+
+        updateForm(postId, newData);
+    };
+
+    const removeForm = async () => {
+        try {
+            const db = getFirestore(app);
+            const docRef = doc(db, 'consultantRequest', postId);
+            await deleteDoc(docRef);
+            navigate('/Consultant');
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    const updateForm = async (postId, newData) => {
+        const db = getFirestore(app);
+        try {
+            const updateFormRef = doc(db, 'consultantRequest', postId);
+            await updateDoc(updateFormRef, newData);
+            alert('수정되었습니다.');
+        } catch (error) {
+            console.error('updateError', error);
+        }
+    };
+
     const kakaoPostCodeHandler = {
         // 버튼 클릭 이벤트
         clickInput: () => {
@@ -102,10 +211,6 @@ const SupportForm = () => {
 
         // 주소 선택 이벤트
         selectAddress: (data) => {
-            console.log(`
-                주소: ${data.address},
-                우편번호: ${data.zonecode}
-            `);
             setAddress(data.address);
             setPostcode(data.zonecode);
             setOpenPostcode(false);
@@ -113,7 +218,6 @@ const SupportForm = () => {
     };
 
     const ImageHandler = (images, flage, lastFileName, storagePath) => {
-        console.log(lastFileName);
         const stateSetters = {
             conceptImages: setConceptImages,
             bathImages: setBathImages,
@@ -144,7 +248,6 @@ const SupportForm = () => {
     };
 
     const imageRemove = (indexToRemove, type) => {
-        console.log('확인');
         if (type === 'bath') {
             const filteredImages = bathImages.filter((_, index) => index !== indexToRemove);
             setBathImages(filteredImages);
@@ -158,66 +261,69 @@ const SupportForm = () => {
         navigate('/Consultant');
     };
 
+    const uploadFileAndGetURL = async (storageRef, file) => {
+        return new Promise((resolve, reject) => {
+            const uploadTask = uploadBytesResumable(storageRef, file);
+
+            uploadTask.on(
+                'state_changed',
+                (snapshot) => {
+                    const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+                    setProgress(progress); // 이 부분은 상태를 관리하는 로직이므로 그대로 둡니다.
+                },
+                (error) => {
+                    console.error(error);
+                    reject(error);
+                },
+                async () => {
+                    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                    resolve(downloadURL);
+                }
+            );
+        });
+    };
+
     const ImageUploadFunction = async (imagesArray, lastFileName, storagePath) => {
         const downloadURLs = [];
         const storage = getStorage(app);
-        console.log('ImageUploadFunction', lastFileName);
-        console.log('ImageUploadFunction', storagePath);
         if (imagesArray && imagesArray.length > 0) {
-            const uploadPromises = imagesArray.map((imageData, index) => {
+            const uploadPromises = imagesArray.map(async (imageData, index) => {
                 const { file } = imageData;
                 if (file) {
                     const now = new Date();
                     const timestamp = `${now.getFullYear()}${now.getMonth()}${now.getDate()}${now.getHours()}${now.getMinutes()}${now.getSeconds()}${index}`;
                     const fileName = `${timestamp}_${lastFileName}`;
-
                     const storageRef = ref(storage, `${storagePath}/${fileName}`);
-                    const uploadTask = uploadBytesResumable(storageRef, file);
-
-                    uploadTask.on(
-                        'state_changed',
-                        (snapshot) => {
-                            const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-                            setProgress(progress);
-                        },
-                        (error) => {
-                            console.error(error);
-                        },
-                        async () => {
-                            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                            downloadURLs.push(downloadURL);
-                        }
-                    );
-                    return uploadTask;
+                    return await uploadFileAndGetURL(storageRef, file);
                 }
                 return null;
             });
 
-            await Promise.all(uploadPromises);
+            const resolvedDownloadURLs = await Promise.all(uploadPromises);
+            downloadURLs.push(...resolvedDownloadURLs.filter((url) => url));
 
-            // null 또는 undefined인 값을 제거하고 '/'로 구분자를 추가하여 문자열로 만듭니다.
-            const joinedDownloadURLs = downloadURLs.filter((url) => url).join('|');
+            console.log('downloadURLs-string', downloadURLs.join('|'));
+            console.log('downloadURLs-[]', downloadURLs);
+
+            const joinedDownloadURLs = downloadURLs.join('|');
+            console.log('joinedDownloadURLs', joinedDownloadURLs);
 
             return joinedDownloadURLs;
         }
     };
 
     const handleImageUpload = async () => {
-        let conceptUrls = [];
-        let bathUrls = [];
-        console.log(conceptImages.length);
-        console.log(bathImages.length);
-        console.log(conceptImages[0]);
-        console.log(bathImages[0]);
+        let conceptUrls = '';
+        let bathUrls = '';
         if (conceptImages.length > 0 && conceptImages[0]) {
             conceptUrls = await ImageUploadFunction(conceptImages, 'conceptImges', 'conceptImges');
-            setConceptImagesDownloadURLs(conceptUrls);
         }
 
         if (bathImages.length > 0 && bathImages[0]) {
             bathUrls = await ImageUploadFunction(bathImages, 'bathImages', 'bathImages');
-            setBathImagesDownloadURLs(bathUrls);
         }
+
+        return { conceptUrls, bathUrls };
     };
 
     const submitForm = async () => {
@@ -241,43 +347,44 @@ const SupportForm = () => {
             alert('주소는 필수 입력사항 입니다.');
             addressInput.current.focus();
         } else {
-            let formData = {
-                nameValue,
-                passwordValue,
-                phoneValue,
-                emailValue,
-                homeTypeValue,
-                homeYearValue,
-                address,
-                postcode,
-                homeSize,
-                isChecked,
-                constructionStartDate: constructionStartDate.toISOString(),
-                moveInDate: moveInDate.toISOString(),
-                constructionBudget,
-                electricalWorkOption,
-                builtinFurnitureOption,
-                expansionWork,
-                floorExcelWork,
-                systemACWork,
-                homeStylingService,
-                mediumDoorReplacement,
-                shassisOption,
-                conceptImagesDownloadURLs,
-                bathImagesDownloadURLs,
-                submitDate: new Date().toUTCString(),
-            };
             try {
-                await handleImageUpload();
+                const { conceptUrls, bathUrls } = await handleImageUpload();
+                console.log('submit', conceptImagesDownloadURLs);
+                let formData = {
+                    nameValue,
+                    passwordValue,
+                    phoneValue,
+                    emailValue,
+                    homeTypeValue,
+                    homeYearValue,
+                    address,
+                    postcode,
+                    homeSize,
+                    isChecked,
+                    constructionStartDate: constructionStartDate.toISOString(),
+                    moveInDate: moveInDate.toISOString(),
+                    constructionBudget,
+                    electricalWorkOption,
+                    builtinFurnitureOption,
+                    selectedBathOption,
+                    expansionWork,
+                    floorExcelWork,
+                    systemACWork,
+                    homeStylingService,
+                    mediumDoorReplacement,
+                    shassisOption,
+                    additionalQuestions,
+                    conceptImagesDownloadURLs: conceptUrls,
+                    bathImagesDownloadURLs: bathUrls,
+                    submitDate: new Date().toISOString(),
+                };
                 const storage = getStorage(app);
                 // Firestore에 데이터 추가
                 const db = getFirestore(app); // app은 초기화된 Firebase 앱 인스턴스입니다.
                 const docRef = await addDoc(collection(db, 'consultantRequest'), formData);
                 alert('문의 완료.견적서 확인 후 연락 드리겠습니다.');
-                console.log(formData);
-                console.log('Document written with ID: ', docRef.id);
             } catch (error) {
-                console.log(error);
+                console.error(error);
             }
         }
     };
@@ -297,6 +404,7 @@ const SupportForm = () => {
                         _onChange={setNameValue}
                         required={true}
                         ref={nameInput}
+                        value={nameValue}
                         autoFocus
                     />
                     <InputComponent
@@ -306,8 +414,8 @@ const SupportForm = () => {
                         maxLength="4"
                         _onChange={setPasswordValue}
                         required={true}
+                        value={passwordValue}
                         ref={passwordInput}
-                        autoFocus
                     />
                     <InputComponent
                         label="연락처 *"
@@ -315,6 +423,7 @@ const SupportForm = () => {
                         inputType="number"
                         ref={phoneInput}
                         required={true}
+                        value={phoneValue}
                         _onChange={setPhoneValue}
                     />
                     <InputComponent
@@ -323,9 +432,15 @@ const SupportForm = () => {
                         inputType="email"
                         ref={emailInput}
                         required={true}
+                        value={emailValue}
                         _onChange={setEmailValue}
                     />
-                    <SelectBoxComponent label="건물 정보 *" options={homeTypeOptions} _onChange={setHomeTypeValue} />
+                    <SelectBoxComponent
+                        label="건물 정보 *"
+                        options={homeTypeOptions}
+                        value={homeTypeValue}
+                        _onChange={setHomeTypeValue}
+                    />
                     {/* 추후 필요하면 추가 다시 확인*/}
                     {/* {homeTypeValue === '기타' && (
                 <InputComponent
@@ -336,7 +451,6 @@ const SupportForm = () => {
                 />
             )}
             <p>입력된 값: {etcHomeTypeValue}</p> */}
-                    <p>{homeTypeValue}</p>
                     <SectionHeader>
                         <HeaderText>건물 정보</HeaderText>
                     </SectionHeader>
@@ -386,6 +500,7 @@ const SupportForm = () => {
                         placeholder="평수를 입력해주세요"
                         _onChange={setHomeSize}
                         ref={homeSizeInput}
+                        value={homeSize}
                     />
                     <SectionHeader>
                         <HeaderText>공사 의뢰 정보</HeaderText>
@@ -408,6 +523,7 @@ const SupportForm = () => {
                         placeholder="예산을 입력해주세요"
                         inputType="number"
                         _onChange={setConstructionBudget}
+                        value={constructionBudget}
                     />
 
                     <RadioComponent
@@ -479,43 +595,54 @@ const SupportForm = () => {
                         name="expansionWork"
                         options={radioYNOption}
                         _onChange={setExpansionWork}
+                        initialValue={expansionWork}
                     />
                     <RadioComponent
                         label="바닥 엑셀 공사"
                         name="floorExcelWork"
                         options={radioYNOption}
                         _onChange={setFloorExcelWork}
+                        initialValue={floorExcelWork}
                     />
                     <RadioComponent
                         label="시스템 에어컨 공사"
                         name="systemACWork"
                         options={radioYNOption}
                         _onChange={setSystemACWork}
-                        initialValue={'Y'}
+                        initialValue={systemACWork}
                     />
                     <RadioComponent
                         label="중문 교체"
                         name="mediumDoorReplacement"
                         options={radioYNOption}
                         _onChange={setMediumDoorReplacement}
+                        initialValue={mediumDoorReplacement}
                     />
                     <RadioComponent
                         label="홈스타일링 서비스"
                         name="homeStylingService"
                         options={radioYNOption}
                         _onChange={setHomeStylingService}
+                        initialValue={homeStylingService}
                     />
                     <SelectBoxComponent
                         label="전기 공사"
                         options={electricOption}
                         _onChange={setElectricalWorkOption}
+                        value={electricalWorkOption}
                     />
                     <SelectBoxComponent
                         label="붙박이 가구 공사"
                         options={furnitureOptions}
                         _onChange={setBuiltinFurnitureOption}
+                        value={builtinFurnitureOption}
                     />
-                    <SelectBoxComponent label="샤시 공사" options={shassisOptions} _onChange={setShassisOption} />
+                    <SelectBoxComponent
+                        label="샤시 공사"
+                        options={shassisOptions}
+                        _onChange={setShassisOption}
+                        value={shassisOption}
+                    />
                     <SectionHeader>
                         <HeaderText>인테리어 컨셉 이미지 업로드</HeaderText>
                     </SectionHeader>
@@ -576,10 +703,20 @@ const SupportForm = () => {
                             )}
                         </div>
                     ))}
-                    <TextBoxComponent label="추가 요청 사항" onChange={setAdditionalQuestions} />
+                    <TextBoxComponent
+                        label="추가 요청 사항"
+                        onChange={(e) => setAdditionalQuestions(e.target.value)}
+                        value={additionalQuestions}
+                    />
                     <ButtonWrapper>
-                        <ButtonComponent buttonName="견적 문의" onClick={submitForm} />
-                        <ButtonComponent buttonName="수정" onClick={submitForm} />
+                        {postId ? (
+                            <>
+                                <ButtonComponent buttonName="수정" onClick={modifyForm} />
+                                <ButtonComponent buttonName="삭제" onClick={removeForm} />
+                            </>
+                        ) : (
+                            <ButtonComponent buttonName="견적 문의" onClick={submitForm} />
+                        )}
                         <ButtonComponent buttonName="취소" onClick={cancelSubmit} />
                     </ButtonWrapper>
                     <CheckBoxComponent label="약관 동의" _onChange={setIsChecked} />
@@ -655,4 +792,4 @@ const HeaderText = styled.span`
 
 Modal.setAppElement('#root');
 
-export default SupportForm;
+export default ConsultantForm;

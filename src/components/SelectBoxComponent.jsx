@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
-const SelectBoxComponent = ({ label, options, _onChange, ...restProps }) => {
+const SelectBoxComponent = ({ label, options, _onChange, value, ...restProps }) => {
     const handleChange = (e) => {
         _onChange(e.target.value);
     };
@@ -9,7 +9,7 @@ const SelectBoxComponent = ({ label, options, _onChange, ...restProps }) => {
     return (
         <Wrapper>
             {label && <StyledLabel>{label}</StyledLabel>}
-            <StyledSelect onChange={handleChange} {...restProps}>
+            <StyledSelect onChange={handleChange} value={value} {...restProps}>
                 {options.map((option, index) => (
                     <option key={index} value={option.value}>
                         {option.label}
@@ -24,6 +24,7 @@ SelectBoxComponent.defaultProps = {
     label: '선택하세요',
     options: [],
     _onChange: () => {},
+    value: '빌라',
 };
 
 const Wrapper = styled.div`
