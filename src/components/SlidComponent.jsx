@@ -42,7 +42,7 @@ const SlideComponent = ({ images }) => {
 const SlideContainer = styled.div`
     position: relative;
     width: 100%;
-    max-width: 800px; // 슬라이드 최대 너비 설정
+    max-width: 1200px; // 슬라이드 최대 너비 설정
     margin: 0 auto;
     overflow: hidden;
 `;

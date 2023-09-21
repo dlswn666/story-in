@@ -12,17 +12,18 @@ import ConsultantForm from './pages/Consultant/ConsultantForm';
 import AdminPage from './pages/admin/AdminPage';
 import ProjectMain from './pages/project/ProjectMain';
 import ProjectDetail from './pages/project/ProjectDetail';
+import styled from 'styled-components';
 
 const Layout = () => {
     return (
         <>
-            <div style={{ position: 'relative' }}>
-                <div style={{ margin: '60px 200px' }}>
+            <PageWrapper>
+                <ContentWrapper>
                     <NavBar />
                     <div style={{ height: '100px', margin: '30px 60px' }}></div>
                     <Outlet />
-                </div>
-            </div>
+                </ContentWrapper>
+            </PageWrapper>
         </>
     );
 };
@@ -46,5 +47,12 @@ const App = () => {
         </BrowserRouter>
     );
 };
+
+const PageWrapper = styled.div``;
+
+const ContentWrapper = styled.div`
+    width: 1900px;
+    margin: 0 auto;
+`;
 
 export default App;

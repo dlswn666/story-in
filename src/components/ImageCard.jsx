@@ -11,7 +11,6 @@ const ImageCard = ({ imageSrc, altText, text }) => {
 };
 
 const IamgeCardContainer = styled.div`
-    width: 300px;
     height: 300px;
     overflow: hidden;
     position: relative;
