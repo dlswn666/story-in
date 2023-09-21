@@ -1,6 +1,4 @@
 import { useState } from 'react';
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import app from '../firebaseConfig';
 import styled from 'styled-components';
 
 const ImageUpload = ({ storagePath, lastFileName, label, allowedFormats, onComplete, maxImages = 1 }) => {
@@ -28,46 +26,6 @@ const ImageUpload = ({ storagePath, lastFileName, label, allowedFormats, onCompl
             }
         }
     };
-
-    // const handleUpload = () => {
-    //     const storage = getStorage(app);
-    //     console.log('images', images);
-    //     // if (images) {
-    //     //     images.forEach((imageData, index) => {
-    //     //         console.log('index', index);
-    //     //         const { file } = imageData;
-    //     //         console.log('file', file);
-    //     //         if (file) {
-    //     //             const now = new Date();
-    //     //             const timestamp = `${now.getFullYear()}${now.getMonth()}${now.getDate()}${now.getHours()}${now.getMinutes()}${now.getSeconds()}${index}`;
-    //     //             const fileName = `${timestamp}_${lastFileName}`;
-
-    //     //             const storageRef = ref(storage, `${storagePath}/${fileName}`);
-    //     //             const uploadTask = uploadBytesResumable(storageRef, file);
-
-    //     //             uploadTask.on(
-    //     //                 'state_changed',
-    //     //                 (snapshot) => {
-    //     //                     const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-    //     //                     setProgress(progress);
-    //     //                 },
-    //     //                 (error) => {
-    //     //                     console.error(error);
-    //     //                 },
-    //     //                 () => {
-    //     //                     getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-    //     //                         console.log('File available at', downloadURL);
-    //     //                         setDownloadUrLs((preDownloadURLs) => [...preDownloadURLs, downloadURL]);
-    //     //                     });
-    //     //                 }
-    //     //             );
-    //     //         }
-    //     //     });
-    //     //     onComplete(downloadURLs);
-    //     // } else {
-    //     //     alert('이미지를 등록해주세요');
-    //     // }
-    // };
 
     return (
         <>

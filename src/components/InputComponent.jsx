@@ -2,12 +2,13 @@ import React, { forwardRef, useState } from 'react';
 import styled, { keyframes } from 'styled-components';
 
 const InputComponent = forwardRef(
-    ({ label, placeholder, _onChange, inputType, required, value, ...restProps }, ref) => {
+    ({ label, placeholder, _onChange, inputType, required, value, name, readOnly, ...restProps }, ref) => {
         const [isEmpty, setIsEmpty] = useState(false);
 
         const handleChange = (e) => {
             const value = e.target.value;
-            _onChange(e.target.value);
+            const name = e.target.name;
+            _onChange(value, name);
 
             if (required) {
                 setIsEmpty(value === '');
@@ -25,6 +26,8 @@ const InputComponent = forwardRef(
                         type={inputType}
                         value={value}
                         required={required}
+                        name={name}
+                        readOnly={readOnly}
                         {...restProps}
                     />
                     {required && isEmpty && <StyledSpan>필수 입력항목입니다.</StyledSpan>}
@@ -41,6 +44,8 @@ InputComponent.defaultProps = {
     inputType: 'text',
     required: false,
     value: '',
+    name: '',
+    readOnly: false,
 };
 
 const Wrapper = styled.div`

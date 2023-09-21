@@ -3,9 +3,11 @@ import ImageCard from '../components/ImageCard';
 import { styled } from 'styled-components';
 import app from '../firebaseConfig';
 import { getDownloadURL, getStorage, listAll, ref } from 'firebase/storage';
+import LoadingPage from '../components/LoadingPage';
 
 const Main = () => {
     const [images, setImages] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     const getImages = async () => {
         const storage = getStorage(app);
@@ -17,6 +19,7 @@ const Main = () => {
 
         // 이미지 URL로 상태 업데이트
         setImages(downloadURLs);
+        setIsLoading(false);
     };
 
     useEffect(() => {
@@ -26,9 +29,17 @@ const Main = () => {
     return (
         <ImageGrid>
             {/* 이미지 카드 컴포넌트에 이미지 데이터를 전달 */}
-            {images.map((image, index) => (
-                <ImageCard key={index} imageSrc={image} altText="Description here" text="Your text here" />
-            ))}
+            {isLoading ? (
+                <>
+                    <LoadingPage isLoading={isLoading} />
+                </>
+            ) : (
+                <>
+                    {images.map((image, index) => (
+                        <ImageCard key={index} imageSrc={image} altText="Description here" text="Your text here" />
+                    ))}
+                </>
+            )}
         </ImageGrid>
     );
 };

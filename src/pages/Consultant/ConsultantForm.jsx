@@ -16,6 +16,7 @@ import { getFirestore, collection, addDoc, getDoc, doc, updateDoc, deleteDoc } f
 import TextBoxComponent from '../../components/TextBoxComponent';
 import { useLocation, useNavigate } from 'react-router-dom';
 import NotificationModal from '../modal/NotificationModal';
+import LoadingPage from '../../components/LoadingPage';
 
 const useQuery = () => {
     return new URLSearchParams(useLocation().search);
@@ -73,6 +74,9 @@ const ConsultantForm = () => {
     const [modalFlag, setModalFlag] = useState('');
 
     const navigate = useNavigate();
+    const [showRequest, setShowRequest] = useState('');
+    const [userPassword, setUserPassword] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
     const [selectedBathOption, setSelectedBathOption] = useState('');
     const radioYNOption = {
@@ -114,38 +118,51 @@ const ConsultantForm = () => {
 
         if (docSnap.exists()) {
             const data = docSnap.data();
-            setNameValue(data.nameValue);
-            setPasswordValue(data.passwordValue);
-            setPhoneValue(data.phoneValue);
-            setEmailValue(data.emailValue);
-            setHomeTypeValue(data.homeTypeValue);
-            setHomeYearValue(
-                data.homeYearValue.seconds ? new Date(data.homeYearValue.seconds * 1000) : data.homeYearValue
-            ); // Timestamp를 Date 객체로 변환
-            setAddress(data.address);
-            setPostcode(data.postcode);
-            setHomeSize(data.homeSize);
-            setConstructionStartDate(new Date(data.constructionStartDate)); // 문자열을 Date 객체로 변환
-            setMoveInDate(new Date(data.moveInDate)); // 문자열을 Date 객체로 변환
-            setConstructionBudget(data.constructionBudget);
-            setElectricalWorkOption(data.electricalWorkOption);
-            setBuiltinFurnitureOption(data.builtinFurnitureOption);
-            setSelectedBathOption(data.selectedBathOption);
-            setShassisOption(data.shassisOption);
-            setExpansionWork(data.expansionWork);
-            setFloorExcelWork(data.floorExcelWork);
-            setSystemACWork(data.systemACWork);
-            setHomeStylingService(data.homeStylingService);
-            setMediumDoorReplacement(data.mediumDoorReplacement);
-            setIsChecked(data.isChecked);
-            setAdditionalQuestions(data.additionalQuestions);
+            console.log(data.passwordValue);
+            console.log(data.passwordValue === userPassword);
+            if (data.passwordValue === userPassword) {
+                setNameValue(data.nameValue);
+                setPasswordValue(data.passwordValue);
+                setPhoneValue(data.phoneValue);
+                setEmailValue(data.emailValue);
+                setHomeTypeValue(data.homeTypeValue);
+                setHomeYearValue(
+                    data.homeYearValue.seconds ? new Date(data.homeYearValue.seconds * 1000) : data.homeYearValue
+                ); // Timestamp를 Date 객체로 변환
+                setAddress(data.address);
+                setPostcode(data.postcode);
+                setHomeSize(data.homeSize);
+                setConstructionStartDate(new Date(data.constructionStartDate)); // 문자열을 Date 객체로 변환
+                setMoveInDate(new Date(data.moveInDate)); // 문자열을 Date 객체로 변환
+                setConstructionBudget(data.constructionBudget);
+                setElectricalWorkOption(data.electricalWorkOption);
+                setBuiltinFurnitureOption(data.builtinFurnitureOption);
+                setSelectedBathOption(data.selectedBathOption);
+                setShassisOption(data.shassisOption);
+                setExpansionWork(data.expansionWork);
+                setFloorExcelWork(data.floorExcelWork);
+                setSystemACWork(data.systemACWork);
+                setHomeStylingService(data.homeStylingService);
+                setMediumDoorReplacement(data.mediumDoorReplacement);
+                setIsChecked(data.isChecked);
+                setAdditionalQuestions(data.additionalQuestions);
 
-            // 배열 형식을 조심스럽게 설정
-            setConceptImagesDownloadURLs(data.conceptImagesDownloadURLs);
-            setBathImagesDownloadURLs(data.bathImagesDownloadURLs);
-            setBathImages(data.bathImagesDownloadURLs.split('|').map((url) => ({ url })));
-            setConceptImages(data.conceptImagesDownloadURLs.split('|').map((url) => ({ url })));
+                // 배열 형식을 조심스럽게 설정
+                setConceptImagesDownloadURLs(data.conceptImagesDownloadURLs);
+                setBathImagesDownloadURLs(data.bathImagesDownloadURLs);
+                setBathImages(data.bathImagesDownloadURLs.split('|').map((url) => ({ url })));
+                setConceptImages(data.conceptImagesDownloadURLs.split('|').map((url) => ({ url })));
+                setShowRequest(true);
+            } else {
+                if (userPassword) {
+                    modalSet('비밀번호가 틀렸습니다. \n다시 확인해주세요', 'alert', '');
+                }
+            }
         }
+    };
+
+    const handlePasswordChange = (e) => {
+        setUserPassword(e.target.value);
     };
 
     useEffect(() => {
@@ -154,7 +171,8 @@ const ConsultantForm = () => {
         }
     }, [postId]);
 
-    const modifyForm = () => {
+    const modifyForm = async () => {
+        const { conceptUrls, bathUrls } = await handleImageUpload();
         const newData = {
             nameValue,
             passwordValue,
@@ -179,9 +197,11 @@ const ConsultantForm = () => {
             mediumDoorReplacement,
             shassisOption,
             additionalQuestions,
-            conceptImagesDownloadURLs,
-            bathImagesDownloadURLs,
-            submitDate: new Date().toISOString(),
+            conceptImagesDownloadURLs: conceptUrls,
+            bathImagesDownloadURLs: bathUrls,
+            submitDate: new Date().toLocaleString('en-US', {
+                timeZone: 'Asia/Seoul',
+            }),
         };
 
         updateForm(postId, newData);
@@ -308,12 +328,7 @@ const ConsultantForm = () => {
             const resolvedDownloadURLs = await Promise.all(uploadPromises);
             downloadURLs.push(...resolvedDownloadURLs.filter((url) => url));
 
-            console.log('downloadURLs-string', downloadURLs.join('|'));
-            console.log('downloadURLs-[]', downloadURLs);
-
             const joinedDownloadURLs = downloadURLs.join('|');
-            console.log('joinedDownloadURLs', joinedDownloadURLs);
-
             return joinedDownloadURLs;
         }
     };
@@ -354,6 +369,7 @@ const ConsultantForm = () => {
             addressInput.current.focus();
         } else {
             try {
+                setIsLoading(true);
                 const { conceptUrls, bathUrls } = await handleImageUpload();
                 console.log('submit', conceptImagesDownloadURLs);
                 let formData = {
@@ -382,7 +398,9 @@ const ConsultantForm = () => {
                     additionalQuestions,
                     conceptImagesDownloadURLs: conceptUrls,
                     bathImagesDownloadURLs: bathUrls,
-                    submitDate: new Date().toISOString(),
+                    submitDate: new Date().toLocaleString('en-US', {
+                        timeZone: 'Asia/Seoul',
+                    }),
                 };
                 const storage = getStorage(app);
                 // Firestore에 데이터 추가
@@ -391,12 +409,14 @@ const ConsultantForm = () => {
                 // alert('문의 완료.견적서 확인 후 연락 드리겠습니다.');
                 const message = '저장 완료. \n견적서 확인 후 연락드리겠습니다';
                 const modalType = 'alert';
-                const modalFlage = 'success';
-                modalSet(message, modalType, modalFlage);
+                const modalFlag = 'success';
+                setIsLoading(false);
+                modalSet(message, modalType, modalFlag);
             } catch (error) {
                 console.error(error);
                 const errorMessage = '저장에 실패하였습니다.';
                 const errorModalType = 'alert';
+                setIsLoading(false);
                 modalSet(errorMessage, errorModalType);
             }
         }
@@ -418,63 +438,87 @@ const ConsultantForm = () => {
             removeForm();
         } else if (flag === 'success') {
             navigate('/Consultant');
+        } else {
+            setModalOpen(false);
         }
     };
 
     return (
         <>
-            <div style={{ display: 'flex' }}>
-                <SideWrapper></SideWrapper>
-                <Wrapper>
-                    <SectionHeader>
-                        <HeaderText>고객 기본 정보</HeaderText>
-                    </SectionHeader>
-                    <InputComponent
-                        label="이름 *"
-                        placeholder="성함을 입력해주세요"
-                        inputType="text"
-                        _onChange={setNameValue}
-                        required={true}
-                        ref={nameInput}
-                        value={nameValue}
-                        autoFocus
-                    />
-                    <InputComponent
-                        label="비밀번호(4자리 숫자) *"
-                        placeholder="비밀번호를 입력해주세요 "
-                        inputType="password"
-                        maxLength="4"
-                        _onChange={setPasswordValue}
-                        required={true}
-                        value={passwordValue}
-                        ref={passwordInput}
-                    />
-                    <InputComponent
-                        label="연락처 *"
-                        placeholder="연락처를 번호만 입력해주세요"
-                        inputType="number"
-                        ref={phoneInput}
-                        required={true}
-                        value={phoneValue}
-                        _onChange={setPhoneValue}
-                    />
-                    <InputComponent
-                        label="E-Mail 주소 *"
-                        placeholder="이메일 주소 입력해주세요"
-                        inputType="email"
-                        ref={emailInput}
-                        required={true}
-                        value={emailValue}
-                        _onChange={setEmailValue}
-                    />
-                    <SelectBoxComponent
-                        label="건물 정보 *"
-                        options={homeTypeOptions}
-                        value={homeTypeValue}
-                        _onChange={setHomeTypeValue}
-                    />
-                    {/* 추후 필요하면 추가 다시 확인*/}
-                    {/* {homeTypeValue === '기타' && (
+            <div>
+                {!showRequest && postId ? (
+                    <div>
+                        <h2>비밀번호를 입력해주세요</h2>
+                        <input
+                            type="password"
+                            placeholder="비밀번호 입력"
+                            value={userPassword}
+                            onChange={handlePasswordChange}
+                        />
+                        <button onClick={fetchData}>확인</button>
+                        <NotificationModal
+                            isopen={modalOpen}
+                            message={modalMessage}
+                            onClose={closeModal}
+                            onConfirm={() => onConfirm(modalFlag)}
+                            type={modalType}
+                            confirmFlag={modalFlag}
+                        />
+                    </div>
+                ) : (
+                    <div>
+                        <div style={{ display: 'flex' }}>
+                            <SideWrapper></SideWrapper>
+                            <Wrapper>
+                                <SectionHeader>
+                                    <HeaderText>고객 기본 정보</HeaderText>
+                                </SectionHeader>
+                                <InputComponent
+                                    label="이름 *"
+                                    placeholder="성함을 입력해주세요"
+                                    inputType="text"
+                                    _onChange={setNameValue}
+                                    required={true}
+                                    ref={nameInput}
+                                    value={nameValue}
+                                    autoFocus
+                                />
+                                <InputComponent
+                                    label="비밀번호(4자리 숫자) *"
+                                    placeholder="비밀번호를 입력해주세요 "
+                                    inputType="password"
+                                    maxLength="4"
+                                    _onChange={setPasswordValue}
+                                    required={true}
+                                    value={passwordValue}
+                                    ref={passwordInput}
+                                />
+                                <InputComponent
+                                    label="연락처 *"
+                                    placeholder="연락처를 번호만 입력해주세요"
+                                    inputType="number"
+                                    ref={phoneInput}
+                                    required={true}
+                                    value={phoneValue}
+                                    _onChange={setPhoneValue}
+                                />
+                                <InputComponent
+                                    label="E-Mail 주소 *"
+                                    placeholder="이메일 주소 입력해주세요"
+                                    inputType="email"
+                                    ref={emailInput}
+                                    required={true}
+                                    value={emailValue}
+                                    _onChange={setEmailValue}
+                                />
+                                <SelectBoxComponent
+                                    label="건물 정보 *"
+                                    options={homeTypeOptions}
+                                    value={homeTypeValue}
+                                    _onChange={setHomeTypeValue}
+                                />
+                                {/* 추후 필요하면 추가 다시 확인*/}
+                                {/* {homeTypeValue === '기타' && (
                 <InputComponent
                     label="기타 정보"
                     placeholder="기타 건물 정보를 입력해주세요"
@@ -483,290 +527,294 @@ const ConsultantForm = () => {
                 />
             )}
             <p>입력된 값: {etcHomeTypeValue}</p> */}
-                    <SectionHeader>
-                        <HeaderText>건물 정보</HeaderText>
-                    </SectionHeader>
-                    <PostCodeComponent
-                        label="건물 주소 *"
-                        _onClick={kakaoPostCodeHandler.clickInput}
-                        address={address}
-                        postcode={postcode}
-                        ref={addressInput}
-                    />
-                    {openPostcode && (
-                        <Modal
-                            isOpen={openPostcode}
-                            onRequestClose={() => setOpenPostcode(false)}
-                            contentLabel="Address Search"
-                            style={{
-                                // 모달 스타일을 설정하려면 여기에 추가
-                                content: {
-                                    width: '520px',
-                                    margin: 'auto',
-                                    height: 'fit-content',
-                                },
-                            }}
-                        >
-                            <DaumPostcodeEmbed
-                                onComplete={kakaoPostCodeHandler.selectAddress} // 값을 선택할 경우 실행되는 이벤트
-                                autoClose={false} // 값을 선택할 경우 사용되는 DOM을 제거하여 자동 닫힘 설정
-                                defaultQuery="판교역로 235" // 팝업을 열때 기본적으로 입력되는 검색어
-                            />
-                        </Modal>
-                    )}
-                    <DatePickerComponent
-                        label="준공년도"
-                        placeholderText="준공일을 선택해주세요( 대략적으로 선택 )"
-                        selectedDate={homeYearValue}
-                        setSelectedDate={setHomeYearValue}
-                        ref={homeYearInput}
-                    />
-                    <InputComponent
-                        label={
-                            <>
-                                <span>건물 평수 *</span>
-                                <br />
-                                <span style={{ fontSize: '15px' }}>평형 또는 m²으로 작성</span>
-                            </>
-                        }
-                        placeholder="평수를 입력해주세요"
-                        _onChange={setHomeSize}
-                        ref={homeSizeInput}
-                        value={homeSize}
-                    />
-                    <SectionHeader>
-                        <HeaderText>공사 의뢰 정보</HeaderText>
-                    </SectionHeader>
-                    <DatePickerComponent
-                        label="공사시작일 *"
-                        placeholderText="공사 시작일을 선택해주세요"
-                        selectedDate={constructionStartDate}
-                        setSelectedDate={setConstructionStartDate}
-                    />
-                    <p>{constructionStartDate.toISOString()}</p>
-                    <DatePickerComponent
-                        label="입주예정일 *"
-                        placeholderText="입주 예정일을 선택해주세요"
-                        selectedDate={moveInDate}
-                        setSelectedDate={setMoveInDate}
-                    />
-                    <InputComponent
-                        label="예산 *(단위 : 원)"
-                        placeholder="예산을 입력해주세요"
-                        inputType="number"
-                        _onChange={setConstructionBudget}
-                        value={constructionBudget}
-                    />
-
-                    <RadioComponent
-                        label="욕실 공사"
-                        name="bath"
-                        options={radioYNOption}
-                        _onChange={setSelectedBathOption}
-                    />
-                    {selectedBathOption === 'Y' && (
-                        <ButtonComponent
-                            label="욕실 컨셉 이미지 업로드"
-                            buttonName="이미지 업로드"
-                            onClick={() => {
-                                setOpenBathImageSelect(true);
-                            }}
-                        />
-                    )}
-                    {openBathImageSelect && (
-                        <Modal
-                            isOpen={openBathImageSelect}
-                            onRequestClose={() => setOpenBathImageSelect(false)}
-                            contentLabel="Address Search"
-                            style={{
-                                // 모달 스타일을 설정하려면 여기에 추가
-                                content: {
-                                    width: '600px',
-                                    margin: 'auto',
-                                    height: 'fit-content',
-                                    display: 'flex',
-                                    justifyContent: 'center',
-                                },
-                            }}
-                        >
-                            <ImageUpload
-                                storagePath="bathImages"
-                                lastFileName="bathImages"
-                                label="욕실 컨셉 이미지 업로드"
-                                allowedFormats={['jpg', 'jpeg', 'png', 'gif']}
-                                onComplete={ImageHandler}
-                                maxImages="5"
-                            />
-                        </Modal>
-                    )}
-                    {bathImages.map((imageData, index) => (
-                        <div key={index} className="image-container">
-                            {imageData.url ? (
-                                <>
-                                    <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-                                        <StyledImagePreview src={imageData.url} />
-                                        <ButtonComponent
-                                            buttonName="취소"
-                                            onClick={() => imageRemove(index, 'bath')}
-                                            style={{
-                                                height: '40px',
-                                                display: 'flex',
-                                                alignItems: 'flex-end',
-                                                marginLeft: '30px',
-                                            }}
-                                        />
-                                    </div>
-                                </>
-                            ) : (
-                                ''
-                            )}
-                        </div>
-                    ))}
-                    <RadioComponent
-                        label="확장 공사"
-                        name="expansionWork"
-                        options={radioYNOption}
-                        _onChange={setExpansionWork}
-                        initialValue={expansionWork}
-                    />
-                    <RadioComponent
-                        label="바닥 엑셀 공사"
-                        name="floorExcelWork"
-                        options={radioYNOption}
-                        _onChange={setFloorExcelWork}
-                        initialValue={floorExcelWork}
-                    />
-                    <RadioComponent
-                        label="시스템 에어컨 공사"
-                        name="systemACWork"
-                        options={radioYNOption}
-                        _onChange={setSystemACWork}
-                        initialValue={systemACWork}
-                    />
-                    <RadioComponent
-                        label="중문 교체"
-                        name="mediumDoorReplacement"
-                        options={radioYNOption}
-                        _onChange={setMediumDoorReplacement}
-                        initialValue={mediumDoorReplacement}
-                    />
-                    <RadioComponent
-                        label="홈스타일링 서비스"
-                        name="homeStylingService"
-                        options={radioYNOption}
-                        _onChange={setHomeStylingService}
-                        initialValue={homeStylingService}
-                    />
-                    <SelectBoxComponent
-                        label="전기 공사"
-                        options={electricOption}
-                        _onChange={setElectricalWorkOption}
-                        value={electricalWorkOption}
-                    />
-                    <SelectBoxComponent
-                        label="붙박이 가구 공사"
-                        options={furnitureOptions}
-                        _onChange={setBuiltinFurnitureOption}
-                        value={builtinFurnitureOption}
-                    />
-                    <SelectBoxComponent
-                        label="샤시 공사"
-                        options={shassisOptions}
-                        _onChange={setShassisOption}
-                        value={shassisOption}
-                    />
-                    <SectionHeader>
-                        <HeaderText>인테리어 컨셉 이미지 업로드</HeaderText>
-                    </SectionHeader>
-                    <ButtonComponent
-                        label="인테리어 컨셉 이미지 업로드"
-                        buttonName="이미지 업로드"
-                        onClick={() => {
-                            setOpenConceptImageSelect(true);
-                        }}
-                    />
-                    {openConceptImageSelect && (
-                        <Modal
-                            isOpen={openConceptImageSelect}
-                            onRequestClose={() => setOpenConceptImageSelect(false)}
-                            contentLabel="Address Search"
-                            style={{
-                                // 모달 스타일을 설정하려면 여기에 추가
-                                content: {
-                                    width: '600px',
-                                    margin: 'auto',
-                                    height: 'fit-content',
-                                    display: 'flex',
-                                    justifyContent: 'center',
-                                },
-                            }}
-                        >
-                            <ImageUpload
-                                storagePath="conceptImages"
-                                lastFileName="conceptImages"
-                                label="인테리어 컨셉 이미지 업로드"
-                                allowedFormats={['jpg', 'jpeg', 'png', 'gif']}
-                                onComplete={ImageHandler}
-                                maxImages="5"
-                            />
-                        </Modal>
-                    )}
-                    <p>{uploadedImageUrl}</p>
-                    {conceptImages.map((imageData, index) => (
-                        <div key={index} className="image-container">
-                            {imageData.url ? (
-                                <>
-                                    <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-                                        <StyledImagePreview src={imageData.url} />
-                                        <ButtonComponent
-                                            buttonName="취소"
-                                            onClick={() => imageRemove(index, 'concept')}
-                                            style={{
-                                                height: '40px',
-                                                display: 'flex',
-                                                alignItems: 'flex-end',
-                                                marginLeft: '30px',
-                                            }}
-                                        />
-                                    </div>
-                                </>
-                            ) : (
-                                ''
-                            )}
-                        </div>
-                    ))}
-                    <TextBoxComponent
-                        label="추가 요청 사항"
-                        onChange={(e) => setAdditionalQuestions(e.target.value)}
-                        value={additionalQuestions}
-                    />
-                    <ButtonWrapper>
-                        {postId ? (
-                            <>
-                                <ButtonComponent buttonName="수정" onClick={modifyForm} />
-                                <ButtonComponent
-                                    buttonName="삭제"
-                                    onClick={() => modalSet('삭제하시겠습니까?', 'confirm', 'remove')}
+                                <SectionHeader>
+                                    <HeaderText>건물 정보</HeaderText>
+                                </SectionHeader>
+                                <PostCodeComponent
+                                    label="건물 주소 *"
+                                    _onClick={kakaoPostCodeHandler.clickInput}
+                                    address={address}
+                                    postcode={postcode}
+                                    ref={addressInput}
                                 />
-                            </>
-                        ) : (
-                            <ButtonComponent buttonName="견적 문의" onClick={submitForm} />
-                        )}
-                        <ButtonComponent buttonName="취소" onClick={cancelSubmit} />
-                    </ButtonWrapper>
-                    <CheckBoxComponent label="약관 동의" _onChange={setIsChecked} />
-                </Wrapper>
-                <NotificationModal
-                    isopen={modalOpen}
-                    message={modalMessage}
-                    onClose={closeModal}
-                    onConfirm={() => onConfirm(modalFlag)}
-                    type={modalType}
-                    confirmFlag={modalFlag}
-                />
-                <SideWrapper></SideWrapper>
+                                {openPostcode && (
+                                    <Modal
+                                        isOpen={openPostcode}
+                                        onRequestClose={() => setOpenPostcode(false)}
+                                        contentLabel="Address Search"
+                                        style={{
+                                            // 모달 스타일을 설정하려면 여기에 추가
+                                            content: {
+                                                width: '520px',
+                                                margin: 'auto',
+                                                height: 'fit-content',
+                                            },
+                                        }}
+                                    >
+                                        <DaumPostcodeEmbed
+                                            onComplete={kakaoPostCodeHandler.selectAddress} // 값을 선택할 경우 실행되는 이벤트
+                                            autoClose={false} // 값을 선택할 경우 사용되는 DOM을 제거하여 자동 닫힘 설정
+                                            defaultQuery="판교역로 235" // 팝업을 열때 기본적으로 입력되는 검색어
+                                        />
+                                    </Modal>
+                                )}
+                                <DatePickerComponent
+                                    label="준공년도"
+                                    placeholderText="준공일을 선택해주세요( 대략적으로 선택 )"
+                                    selectedDate={homeYearValue}
+                                    setSelectedDate={setHomeYearValue}
+                                    ref={homeYearInput}
+                                />
+                                <InputComponent
+                                    label={
+                                        <>
+                                            <span>건물 평수 *</span>
+                                            <br />
+                                            <span style={{ fontSize: '15px' }}>평형 또는 m²으로 작성</span>
+                                        </>
+                                    }
+                                    placeholder="평수를 입력해주세요"
+                                    _onChange={setHomeSize}
+                                    ref={homeSizeInput}
+                                    value={homeSize}
+                                />
+                                <SectionHeader>
+                                    <HeaderText>공사 의뢰 정보</HeaderText>
+                                </SectionHeader>
+                                <DatePickerComponent
+                                    label="공사시작일 *"
+                                    placeholderText="공사 시작일을 선택해주세요"
+                                    selectedDate={constructionStartDate}
+                                    setSelectedDate={setConstructionStartDate}
+                                />
+                                <p>{constructionStartDate.toISOString()}</p>
+                                <DatePickerComponent
+                                    label="입주예정일 *"
+                                    placeholderText="입주 예정일을 선택해주세요"
+                                    selectedDate={moveInDate}
+                                    setSelectedDate={setMoveInDate}
+                                />
+                                <InputComponent
+                                    label="예산 *(단위 : 원)"
+                                    placeholder="예산을 입력해주세요"
+                                    inputType="number"
+                                    _onChange={setConstructionBudget}
+                                    value={constructionBudget}
+                                />
+
+                                <RadioComponent
+                                    label="욕실 공사"
+                                    name="bath"
+                                    options={radioYNOption}
+                                    _onChange={setSelectedBathOption}
+                                />
+                                {selectedBathOption === 'Y' && (
+                                    <ButtonComponent
+                                        label="욕실 컨셉 이미지 업로드"
+                                        buttonName="이미지 업로드"
+                                        onClick={() => {
+                                            setOpenBathImageSelect(true);
+                                        }}
+                                    />
+                                )}
+                                {openBathImageSelect && (
+                                    <Modal
+                                        isOpen={openBathImageSelect}
+                                        onRequestClose={() => setOpenBathImageSelect(false)}
+                                        contentLabel="Address Search"
+                                        style={{
+                                            // 모달 스타일을 설정하려면 여기에 추가
+                                            content: {
+                                                width: '600px',
+                                                margin: 'auto',
+                                                height: 'fit-content',
+                                                display: 'flex',
+                                                justifyContent: 'center',
+                                            },
+                                        }}
+                                    >
+                                        <ImageUpload
+                                            storagePath="bathImages"
+                                            lastFileName="bathImages"
+                                            label="욕실 컨셉 이미지 업로드"
+                                            allowedFormats={['jpg', 'jpeg', 'png', 'gif']}
+                                            onComplete={ImageHandler}
+                                            maxImages="5"
+                                        />
+                                    </Modal>
+                                )}
+                                {bathImages.map((imageData, index) => (
+                                    <div key={index} className="image-container">
+                                        {imageData.url ? (
+                                            <>
+                                                <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+                                                    <StyledImagePreview src={imageData.url} />
+                                                    <ButtonComponent
+                                                        buttonName="취소"
+                                                        onClick={() => imageRemove(index, 'bath')}
+                                                        style={{
+                                                            height: '40px',
+                                                            display: 'flex',
+                                                            alignItems: 'flex-end',
+                                                            marginLeft: '30px',
+                                                        }}
+                                                    />
+                                                </div>
+                                            </>
+                                        ) : (
+                                            ''
+                                        )}
+                                    </div>
+                                ))}
+                                <RadioComponent
+                                    label="확장 공사"
+                                    name="expansionWork"
+                                    options={radioYNOption}
+                                    _onChange={setExpansionWork}
+                                    initialValue={expansionWork}
+                                />
+                                <RadioComponent
+                                    label="바닥 엑셀 공사"
+                                    name="floorExcelWork"
+                                    options={radioYNOption}
+                                    _onChange={setFloorExcelWork}
+                                    initialValue={floorExcelWork}
+                                />
+                                <RadioComponent
+                                    label="시스템 에어컨 공사"
+                                    name="systemACWork"
+                                    options={radioYNOption}
+                                    _onChange={setSystemACWork}
+                                    initialValue={systemACWork}
+                                />
+                                <RadioComponent
+                                    label="중문 교체"
+                                    name="mediumDoorReplacement"
+                                    options={radioYNOption}
+                                    _onChange={setMediumDoorReplacement}
+                                    initialValue={mediumDoorReplacement}
+                                />
+                                <RadioComponent
+                                    label="홈스타일링 서비스"
+                                    name="homeStylingService"
+                                    options={radioYNOption}
+                                    _onChange={setHomeStylingService}
+                                    initialValue={homeStylingService}
+                                />
+                                <SelectBoxComponent
+                                    label="전기 공사"
+                                    options={electricOption}
+                                    _onChange={setElectricalWorkOption}
+                                    value={electricalWorkOption}
+                                />
+                                <SelectBoxComponent
+                                    label="붙박이 가구 공사"
+                                    options={furnitureOptions}
+                                    _onChange={setBuiltinFurnitureOption}
+                                    value={builtinFurnitureOption}
+                                />
+                                <SelectBoxComponent
+                                    label="샤시 공사"
+                                    options={shassisOptions}
+                                    _onChange={setShassisOption}
+                                    value={shassisOption}
+                                />
+                                <SectionHeader>
+                                    <HeaderText>인테리어 컨셉 이미지 업로드</HeaderText>
+                                </SectionHeader>
+                                <ButtonComponent
+                                    label="인테리어 컨셉 이미지 업로드"
+                                    buttonName="이미지 업로드"
+                                    onClick={() => {
+                                        setOpenConceptImageSelect(true);
+                                    }}
+                                />
+                                {openConceptImageSelect && (
+                                    <Modal
+                                        isOpen={openConceptImageSelect}
+                                        onRequestClose={() => setOpenConceptImageSelect(false)}
+                                        contentLabel="Address Search"
+                                        style={{
+                                            // 모달 스타일을 설정하려면 여기에 추가
+                                            content: {
+                                                width: '600px',
+                                                margin: 'auto',
+                                                height: 'fit-content',
+                                                display: 'flex',
+                                                justifyContent: 'center',
+                                            },
+                                        }}
+                                    >
+                                        <ImageUpload
+                                            storagePath="conceptImages"
+                                            lastFileName="conceptImages"
+                                            label="인테리어 컨셉 이미지 업로드"
+                                            allowedFormats={['jpg', 'jpeg', 'png', 'gif']}
+                                            onComplete={ImageHandler}
+                                            maxImages="5"
+                                        />
+                                    </Modal>
+                                )}
+                                <p>{uploadedImageUrl}</p>
+                                {conceptImages.map((imageData, index) => (
+                                    <div key={index} className="image-container">
+                                        {imageData.url ? (
+                                            <>
+                                                <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+                                                    <StyledImagePreview src={imageData.url} />
+                                                    <ButtonComponent
+                                                        buttonName="취소"
+                                                        onClick={() => imageRemove(index, 'concept')}
+                                                        style={{
+                                                            height: '40px',
+                                                            display: 'flex',
+                                                            alignItems: 'flex-end',
+                                                            marginLeft: '30px',
+                                                        }}
+                                                    />
+                                                </div>
+                                            </>
+                                        ) : (
+                                            ''
+                                        )}
+                                    </div>
+                                ))}
+                                <TextBoxComponent
+                                    label="추가 요청 사항"
+                                    onChange={(e) => setAdditionalQuestions(e.target.value)}
+                                    value={additionalQuestions}
+                                />
+                                <ButtonWrapper>
+                                    {postId ? (
+                                        <>
+                                            <ButtonComponent buttonName="수정" onClick={modifyForm} />
+                                            <ButtonComponent
+                                                buttonName="삭제"
+                                                onClick={() => modalSet('삭제하시겠습니까?', 'confirm', 'remove')}
+                                            />
+                                        </>
+                                    ) : (
+                                        <ButtonComponent buttonName="견적 문의" onClick={submitForm} />
+                                    )}
+                                    <ButtonComponent buttonName="취소" onClick={cancelSubmit} />
+                                </ButtonWrapper>
+                                <CheckBoxComponent label="약관 동의" _onChange={setIsChecked} />
+                            </Wrapper>
+                            <LoadingPage isLoading={isLoading} />
+                            <NotificationModal
+                                isopen={modalOpen}
+                                message={modalMessage}
+                                onClose={closeModal}
+                                onConfirm={() => onConfirm(modalFlag)}
+                                type={modalType}
+                                confirmFlag={modalFlag}
+                            />
+                            <SideWrapper></SideWrapper>
+                        </div>
+                        <div style={{ height: '300px' }}></div>
+                    </div>
+                )}
             </div>
-            <div style={{ height: '300px' }}></div>
         </>
     );
 };

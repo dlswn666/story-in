@@ -3,30 +3,32 @@ import styled from 'styled-components';
 
 const NavBar = () => {
     return (
-        <NavWarpper>
-            <WebName>
-                <a href="/">StoryIn</a>
-            </WebName>
-            <NaviBar>
-                <ul>
-                    <li>
-                        <a href="/main">Main</a>
-                    </li>
-                    <li>
-                        <a href="/about">About</a>
-                    </li>
-                    <li>
-                        <a href="/project">Project</a>
-                    </li>
-                    <li>
-                        <a href="/consultant">Consultant</a>
-                    </li>
-                    <li>
-                        <a href="/admin">Admin</a>
-                    </li>
-                </ul>
-            </NaviBar>
-        </NavWarpper>
+        <>
+            <NavWarpper>
+                <WebName>
+                    <a href="/">StoryIn</a>
+                </WebName>
+                <NaviBar>
+                    <ul>
+                        <li>
+                            <a href="/main">Main</a>
+                        </li>
+                        <li>
+                            <a href="/about">About</a>
+                        </li>
+                        <li>
+                            <a href="/project">Project</a>
+                        </li>
+                        <li>
+                            <a href="/consultant">Consultant</a>
+                        </li>
+                        <li>
+                            <a href="/admin">Admin</a>
+                        </li>
+                    </ul>
+                </NaviBar>
+            </NavWarpper>
+        </>
     );
 };
 
@@ -39,7 +41,7 @@ const NaviBar = styled.nav`
 
         li {
             display: inline;
-            margin: 0 20px;
+            margin: 0 1rem;
 
             a {
                 text-decoration: none;
@@ -81,15 +83,18 @@ const NavWarpper = styled.div`
     top: 0;
     left: 0;
     right: 0;
-    height: 30px;
+    height: 4rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 50px 200px;
+    padding: 1rem 10rem;
     z-index: 100;
 
     @media (max-width: 768px) {
-        flex-direction: column;
+            flex-direction: column;
+            height: auto; /* 모바일 화면에서 자동으로 높이 조절 */
+            padding: 2rem 0; /* 모바일 화면에서 자동으로 패딩 조절 */
+        }
     }
 `;
 
