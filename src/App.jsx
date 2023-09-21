@@ -57,30 +57,36 @@ const ContentWrapper = styled.div`
 
     @media (max-width: 1920px) {
         max-width: 1600px;
+        padding: 0 20px;
     }
 
     @media (max-width: 1600px) {
         max-width: 1400px;
+        padding: 0 20px;
     }
 
     @media (max-width: 1400px) {
         max-width: 1200px;
+        padding: 0 20px;
     }
 
     @media (max-width: 1200px) {
         max-width: 1000px;
+        padding: 0 20px;
     }
 
     @media (max-width: 1000px) {
         max-width: 800px;
+        padding: 0 20px;
     }
 
     @media (max-width: 800px) {
         max-width: 600px;
+        padding: 0 20px;
     }
 
     @media (max-width: 600px) {
-        max-width: 100%;
+        max-width: 90%;
         padding: 0 20px;
     }
 `;
