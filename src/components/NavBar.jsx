@@ -113,11 +113,11 @@ const SideMenu = styled.div`
 
     ul {
         list-style: none;
-        text-align: center;
     }
 
     li {
         margin: 1rem 0;
+        font-size: 2rem;
     }
 
     a {

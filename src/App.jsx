@@ -20,7 +20,7 @@ const Layout = () => {
             <PageWrapper>
                 <ContentWrapper>
                     <NavBar />
-                    <div style={{ height: '100px', margin: '30px 60px' }}></div>
+                    <div className="nav-space"></div>
                     <Outlet />
                 </ContentWrapper>
             </PageWrapper>
@@ -51,8 +51,38 @@ const App = () => {
 const PageWrapper = styled.div``;
 
 const ContentWrapper = styled.div`
-    width: 1900px;
+    max-width: 1900px;
+    width: 100%;
     margin: 0 auto;
+
+    @media (max-width: 1920px) {
+        max-width: 1600px;
+    }
+
+    @media (max-width: 1600px) {
+        max-width: 1400px;
+    }
+
+    @media (max-width: 1400px) {
+        max-width: 1200px;
+    }
+
+    @media (max-width: 1200px) {
+        max-width: 1000px;
+    }
+
+    @media (max-width: 1000px) {
+        max-width: 800px;
+    }
+
+    @media (max-width: 800px) {
+        max-width: 600px;
+    }
+
+    @media (max-width: 600px) {
+        max-width: 100%;
+        padding: 0 20px;
+    }
 `;
 
 export default App;
